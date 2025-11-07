@@ -1,0 +1,11 @@
+data_root: "data/prices"
+symbols: ["BTCUSDT"]
+freqs: ["1h", "1d"]
+primary: "binance"
+fallback: "coinbase"
+alignment:
+  timezone: "UTC"
+  daily_close_hhmm: "00:00"
+qa:
+  max_gap_hours: 6
+  max_basis_diff_pct: 1.0

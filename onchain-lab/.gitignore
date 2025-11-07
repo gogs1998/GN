@@ -1,0 +1,14 @@
+.env
+.env.local
+.data/
+data/bitcoind/
+data/prices/
+data/raw/
+data/raw/**
+data/utxo/
+data/utxo/**
+config/price_oracle.local.yaml
+config/utxo.local.yaml
+__pycache__/
+*.pyc
+poetry.lock

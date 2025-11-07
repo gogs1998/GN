@@ -1,0 +1,19 @@
+name: Push to Remote Mirror
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  push-to-mirror:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # Fetch all history for all branches and tags
+
+      - name: Push to remote repository
+        run: |
+          git push --mirror "https://gogs1998:${{ secrets.REMOTE_PAT }}@github.com/gogs1998/Onchain_lab.git"
