@@ -81,9 +81,23 @@ def run_checks(
     merged: Sequence[PriceRecord],
     primary: Sequence[PriceRecord],
     fallback: Sequence[PriceRecord],
+    fallback_expected: bool,
     max_gap_hours: float,
     max_basis_diff_pct: float,
 ) -> QAResult:
-    gaps = gap_checks(merged, max_gap_hours=max_gap_hours)
+    gaps = gap_checks(merged, max_gap_hours=max_gap_hours) if len(merged) >= 2 else []
     basis = basis_checks(primary, fallback, max_basis_diff_pct=max_basis_diff_pct)
+
+    if not merged:
+        gaps.append("Merged price series is empty; cannot publish price data")
+
+    if not primary:
+        gaps.append("Primary source produced no records for the build window")
+
+    if fallback_expected and not fallback:
+        basis.append("Fallback source produced no records; redundancy guarantees unmet")
+
+    if not primary and not fallback:
+        basis.append("Neither primary nor fallback sources provided data")
+
     return QAResult(symbol=symbol, freq=freq, gap_warnings=gaps, basis_warnings=basis)

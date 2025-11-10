@@ -1633,6 +1633,21 @@ onchain-models signal  --model xgboost --out data/models/baseline_signals.parque
 
 ---
 
+### Stage R1c: Price Oracle Source QA Hardening
+**Date**: 2025-11-10  
+**Delivered by Codex**:
+- Tightened price QA to treat missing primary data or absent fallback records as fatal (`run_checks` now enforces primary presence and redundancy guarantees).
+- Updated `PriceOracle` to flag when fallback coverage is expected and added regression tests ensuring empty CSVs or missing redundancy trigger `QAError`.
+
+**Review Notes**:
+- ✅ Stage R blocker “empty primary/fallback CSVs pass QA” resolved; builds fail fast when either source delivers zero rows.
+- ⚠️ Remaining blockers: UTXO snapshot boundary inclusion and ingest golden-day partition resolution.
+
+**Status**: ✅ **APPROVED – Blocker cleared**  
+**Next Step**: Address UTXO snapshot boundary handling next.
+
+---
+
 **Stage X: [Module/Component Name]**
 **Date**: YYYY-MM-DD
 **Delivered by Codex**:

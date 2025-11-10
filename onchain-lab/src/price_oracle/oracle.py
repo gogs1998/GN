@@ -95,6 +95,7 @@ class PriceOracle:
             merged=merged,
             primary=aligned_primary,
             fallback=aligned_fallback,
+            fallback_expected=bool(self.config.fallback and self.config.fallback != self.config.primary),
             max_gap_hours=self.config.qa.max_gap_hours,
             max_basis_diff_pct=self.config.qa.max_basis_diff_pct,
         )

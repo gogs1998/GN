@@ -176,6 +176,32 @@ def test_price_oracle_fallback_only_triggers_qa(tmp_path: Path) -> None:
         oracle.build()
 
 
+def test_price_oracle_primary_empty_csv_fails(tmp_path: Path) -> None:
+    cfg = _config(tmp_path)
+    raw_root = cfg.data_root.parent / "raw"
+    binance_path = raw_root / "binance" / "BTCUSDT-1h.csv"
+    fallback_path = raw_root / "coinbase" / "BTCUSDT-1h.csv"
+
+    _write_binance_csv(binance_path, [])
+    _write_coinbase_csv(
+        fallback_path,
+        [
+            {
+                "time": "2024-03-09T16:00:00Z",
+                "open": "105",
+                "high": "115",
+                "low": "100",
+                "close": "107",
+                "volume": "9",
+            }
+        ],
+    )
+
+    oracle = PriceOracle(cfg)
+    with pytest.raises(QAError):
+        oracle.build()
+
+
 def test_price_oracle_basis_diff_threshold(tmp_path: Path) -> None:
     cfg = _config(tmp_path).model_copy(
         update={"qa": QAConfig(max_gap_hours=6, max_basis_diff_pct=1.0)}
@@ -208,6 +234,39 @@ def test_price_oracle_basis_diff_threshold(tmp_path: Path) -> None:
                 "low": "100",
                 "close": "110",
                 "volume": "9",
+            }
+        ],
+    )
+
+    oracle = PriceOracle(cfg)
+    with pytest.raises(QAError):
+        oracle.build()
+
+
+def test_price_oracle_errors_when_all_sources_missing(tmp_path: Path) -> None:
+    cfg = _config(tmp_path)
+    oracle = PriceOracle(cfg)
+
+    with pytest.raises(QAError):
+        oracle.build()
+
+
+def test_price_oracle_missing_fallback_records_fails(tmp_path: Path) -> None:
+    cfg = _config(tmp_path)
+    raw_root = cfg.data_root.parent / "raw"
+    binance_path = raw_root / "binance" / "BTCUSDT-1h.csv"
+
+    _write_binance_csv(
+        binance_path,
+        [
+            {
+                "open_time": "1710000000000",
+                "open": "100",
+                "high": "110",
+                "low": "95",
+                "close": "105",
+                "volume": "10",
+                "close_time": "1710000000000",
             }
         ],
     )
