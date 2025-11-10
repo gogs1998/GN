@@ -1,0 +1,36 @@
+data:
+  price_glob: "../data/prices/**/*.parquet"
+  lifecycle:
+    created: "../data/utxo/created/created.parquet"
+    spent: "../data/utxo/spent/spent.parquet"
+    snapshots_glob: "../data/utxo/snapshots/daily/*.parquet"
+  output_root: "../data/metrics/daily"
+  symbol: "BTCUSDT"
+  frequency: "1d"
+engine:
+  mvrv_window_days: 365
+  dormancy_window_days: 365
+  drawdown_window_days: 365
+qa:
+  golden_days:
+    - date: 2025-11-07
+      metrics:
+        price_close: 35250.0
+        utxo_profit_share: 1.0
+      tolerance_pct: 1.0
+    - date: 2025-11-08
+      metrics:
+        price_close: 35480.0
+        utxo_profit_share: 1.0
+      tolerance_pct: 1.0
+    - date: 2025-11-09
+      metrics:
+        price_close: 35720.0
+        utxo_profit_share: 1.0
+      tolerance_pct: 1.0
+  max_drawdown_pct: 95.0
+  min_price: 0.0
+  lookahead_tolerance_days: 0
+writer:
+  compression: "zstd"
+  compression_level: 7

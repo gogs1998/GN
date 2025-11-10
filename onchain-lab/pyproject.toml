@@ -28,6 +28,7 @@ mypy = "^1.11.0"
 [tool.poetry.scripts]
 onchain = "src.ingest.cli:app"
 price-oracle = "src.price_oracle.cli:app"
+onchain-utxo = "src.utxo.cli:app"
 
 [tool.ruff]
 line-length = 100

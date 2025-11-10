@@ -1,0 +1,22 @@
+data:
+  ingest:
+    blocks: "data/parquet/blocks/**/*.parquet"
+    transactions: "data/parquet/tx/**/*.parquet"
+    txin: "data/parquet/txin/**/*.parquet"
+    txout: "data/parquet/txout/**/*.parquet"
+  price:
+    parquet: "data/prices/**/*.parquet"
+    symbol: "BTCUSDT"
+    freq: "1d"
+  lifecycle_root: "data/utxo"
+snapshot:
+  timezone: "UTC"
+  daily_close_hhmm: "00:00"
+writer:
+  compression: "zstd"
+  zstd_level: 9
+qa:
+  price_coverage_min_pct: 99.5
+  supply_tolerance_sats: 1
+  lifespan_max_days: 3650
+  max_snapshot_gap_pct: 0.0
