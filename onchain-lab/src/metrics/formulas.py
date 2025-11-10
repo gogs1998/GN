@@ -114,10 +114,6 @@ def compute_metrics(
         lambda row: _safe_div(row["asopr_realized_value"], row["asopr_cost_basis"]), axis=1
     )
 
-    merged["adjusted_cdd"] = merged.apply(
-        lambda row: _safe_div(row["cdd"], row["spent_value_btc"]), axis=1
-    )
-
     merged.rename(columns={"cost_basis_snap_usd": "supply_cost_basis_usd"}, inplace=True)
     merged["supply_cost_basis_usd"] = merged["supply_cost_basis_usd"].ffill()
 

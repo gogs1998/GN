@@ -1618,6 +1618,21 @@ onchain-models signal  --model xgboost --out data/models/baseline_signals.parque
 
 ---
 
+### Stage R1b: Metrics Formula Stability Patch
+**Date**: 2025-11-10  
+**Delivered by Codex**:
+- Removed the redundant `adjusted_cdd` recomputation in `src/metrics/formulas.py` that reintroduced NaNs on no-spend days.
+- Added regression coverage (`tests/metrics/test_formulas.py::test_adjusted_cdd_stays_zero_when_no_spend`) verifying aSOPR and adjusted CDD remain zero-filled when no spent outputs exist.
+
+**Review Notes**:
+- ✅ Stage R blocker “adjusted_cdd recompute nullifies zero fills” resolved; metrics pipeline retains deterministic zero output for no-spend scenarios.
+- ⚠️ Remaining Stage R blockers (price oracle empty-source QA, snapshot boundary edge case, ingest golden-day partition resolution) still outstanding.
+
+**Status**: ✅ **APPROVED – Blocker cleared**  
+**Next Step**: Continue addressing residual Stage R audit items before promoting Stage 5.
+
+---
+
 **Stage X: [Module/Component Name]**
 **Date**: YYYY-MM-DD
 **Delivered by Codex**:

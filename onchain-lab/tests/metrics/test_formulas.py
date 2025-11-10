@@ -134,3 +134,15 @@ def test_supply_cost_basis_forward_fill_without_realized_backfill() -> None:
     assert pytest.approx(day2["supply_cost_basis_usd"], rel=1e-9) == day1["supply_cost_basis_usd"]
     assert abs(day2["supply_cost_basis_usd"] - day2["realized_value_usd"]) > 1e-6
     assert day1["adjusted_cdd"] == 0.0
+
+
+def test_adjusted_cdd_stays_zero_when_no_spend() -> None:
+    engine = EngineConfig(mvrv_window_days=2, dormancy_window_days=2, drawdown_window_days=2)
+    spent = _spent_frame().iloc[0:0].copy()
+    result = compute_metrics(_price_frame(), _snapshot_frame(), spent, engine)
+
+    day1 = result.frame.loc[result.frame["date"] == date(2024, 1, 1)].iloc[0]
+    day2 = result.frame.loc[result.frame["date"] == date(2024, 1, 2)].iloc[0]
+
+    assert day1["adjusted_cdd"] == 0.0
+    assert day2["adjusted_cdd"] == 0.0
