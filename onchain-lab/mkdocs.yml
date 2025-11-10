@@ -1,0 +1,26 @@
+site_name: Onchain Lab Metrics
+docs_dir: docs
+theme:
+  name: readthedocs
+nav:
+  - Overview: index.md
+  - Metrics:
+    - Adjusted Cdd: metrics/adjusted_cdd.md
+    - Asopr: metrics/asopr.md
+    - Cdd: metrics/cdd.md
+    - Dormancy Flow: metrics/dormancy_flow.md
+    - Drawdown Pct: metrics/drawdown_pct.md
+    - Market Value Usd: metrics/market_value_usd.md
+    - Mvrv: metrics/mvrv.md
+    - Mvrv Zscore: metrics/mvrv_zscore.md
+    - Nupl: metrics/nupl.md
+    - Price Close: metrics/price_close.md
+    - Realized Loss Usd: metrics/realized_loss_usd.md
+    - Realized Profit Loss Ratio: metrics/realized_profit_loss_ratio.md
+    - Realized Profit Usd: metrics/realized_profit_usd.md
+    - Realized Value Usd: metrics/realized_value_usd.md
+    - Sopr: metrics/sopr.md
+    - Supply Btc: metrics/supply_btc.md
+    - Supply Cost Basis Usd: metrics/supply_cost_basis_usd.md
+    - Supply Sats: metrics/supply_sats.md
+    - Utxo Profit Share: metrics/utxo_profit_share.md

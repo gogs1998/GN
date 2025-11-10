@@ -1571,6 +1571,53 @@ onchain-models signal  --model xgboost --out data/models/baseline_signals.parque
 
 ---
 
+### Stage R1: Metrics Transparency Regression Review
+**Date**: 2025-11-10  
+**Delivered by Codex (Review Only)**:
+- Spot-check of Stage 6 artifacts (docs, golden evidence, inspector CLI) plus the `tests/metrics` suite execution path.
+
+**Review Notes**:
+- ✅ Stage 6 artifacts remain aligned with provenance requirements; registry/doc outputs still deterministic when inputs are present.
+- ⚠️ Blocking regressions discovered:
+  1. `tests/metrics/test_docs.py` & `tests/metrics/test_inspect.py` import `_config` via `tests.metrics...`, which resolves to a third-party `tests` package on most environments. Result: `pytest tests/metrics -q` fails during collection (`ModuleNotFoundError`) so no transparency tests can execute.
+  2. `src/metrics/golden.py:91-101` writes every golden artifact to `{metric}_golden.png`. Multiple golden days per metric (already configured for `price_close` / `utxo_profit_share`) overwrite prior evidence, erasing two out of three checkpoints.
+  3. `src/metrics/inspect.py:127-135` derives `price_rows`/`price_close` totals from the paginated slice rather than the full-day window. Changing `--limit/--offset` mutates reported totals, undermining reproducibility guarantees for inspector outputs.
+
+**Technical Soundness**:
+- Architecture is still sound, but the failed tests and evidence overwrites block the “verifiability” pillar. Need import fixes (package-local `_config`), filename strategy that encodes target date, and inspector totals computed pre-pagination with regression tests.
+
+**Gaps/Concerns**:
+- Tests currently cannot run in clean environments, hiding future regressions.
+- Evidence catalog risks silently losing history for any metric with ≥2 golden anchors.
+- Inspector CLI can no longer serve as a notarized view because pagination alters reported aggregates.
+
+**Alignment Check**:
+- Issues directly impact Stage 6 acceptance criteria (#1, #5, #7) and must be resolved before Stage 5 work resumes.
+- Review complied with AI-agent rules (advisory only, no code changes).
+
+**Status**: NEEDS REVISION  
+**Action**: Fix import pathing (e.g., relative imports or local `tests/__init__.py`), persist per-date golden artifacts + add regression coverage, and normalize inspector aggregates before pagination. Rerun `pytest tests/metrics -q` afterward.
+**Next Stage**: Stage 5 Model Baselines once transparency regressions are cleared.
+
+---
+
+### Stage R1a: Transparency Regression Remediation
+**Date**: 2025-11-10  
+**Delivered by Codex**:
+- Added `tests/__init__.py` and `tests/metrics/__init__.py`, switched local helpers to relative imports so `pytest tests/metrics -q` resolves in clean environments.
+- Updated `src/metrics/golden.py` to emit per-date artifact filenames and taught `src/metrics/docs.py` to surface the latest capture, eliminating silent overwrites.
+- Normalized pagination handling in `src/metrics/inspect.py` and extended CLI tests to assert invariant totals across limit/offset permutations.
+
+**Review Notes**:
+- ✅ Transparency tooling now matches Stage 6 acceptance criteria: QA artifacts preserve every golden anchor and inspector output remains reproducible under pagination.
+- ✅ Regression coverage added (`tests/metrics/test_docs.py`, `tests/metrics/test_inspect.py`) guarding filename uniqueness and pagination invariance.
+- ⚠️ Remaining Stage R blockers (price oracle QA hardening, snapshot boundary edge cases, ingest golden-day partitions) still open and tracked under Stage R.
+
+**Status**: ✅ **APPROVED – Stage R1 regressions cleared**  
+**Next Step**: Resume Stage R remediation backlog, then proceed to Stage 5 model baselines once outstanding blockers close.
+
+---
+
 **Stage X: [Module/Component Name]**
 **Date**: YYYY-MM-DD
 **Delivered by Codex**:

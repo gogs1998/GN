@@ -1,0 +1,345 @@
+schema_version: metrics.registry.v2
+metadata:
+  generated_at: '2025-11-10T12:28:47Z'
+  generator: onchain-metrics.build
+metrics:
+  price_close:
+    description: Daily closing price in USD from the approved price oracle.
+    dependencies:
+    - price_oracle
+    docs_path: ../docs/metrics/price_close.md
+    badge:
+      version: 1.0.0
+      status: verified
+      coverage_pct: 100.0
+      null_ratio: 0.0
+      golden_checks_passed: true
+      deflated_sharpe_score: 0.0
+      no_lookahead: true
+      reproducible: true
+      utxo_snapshot_commit: utxo-snapshots@f7b2d9a9e05a
+      price_root_commit: price-oracle@18b953253fdb
+      formulas_version: metrics-formulas@metrics.v1+7ca0189cc1328028
+  market_value_usd:
+    description: Market capitalization computed as outstanding BTC balance multiplied
+      by the daily close.
+    dependencies:
+    - price_oracle
+    - utxo.snapshots
+    docs_path: ../docs/metrics/market_value_usd.md
+    badge:
+      version: 1.0.0
+      status: verified
+      coverage_pct: 100.0
+      null_ratio: 0.0
+      golden_checks_passed: true
+      deflated_sharpe_score: 0.0
+      no_lookahead: true
+      reproducible: true
+      utxo_snapshot_commit: utxo-snapshots@f7b2d9a9e05a
+      price_root_commit: price-oracle@18b953253fdb
+      formulas_version: metrics-formulas@metrics.v1+7ca0189cc1328028
+  realized_value_usd:
+    description: Total realized capitalization derived from cost basis of current
+      UTXO set.
+    dependencies:
+    - utxo.snapshots
+    docs_path: ../docs/metrics/realized_value_usd.md
+    badge:
+      version: 1.0.0
+      status: verified
+      coverage_pct: 100.0
+      null_ratio: 0.0
+      golden_checks_passed: true
+      deflated_sharpe_score: 0.0
+      no_lookahead: true
+      reproducible: true
+      utxo_snapshot_commit: utxo-snapshots@f7b2d9a9e05a
+      price_root_commit: price-oracle@18b953253fdb
+      formulas_version: metrics-formulas@metrics.v1+7ca0189cc1328028
+  realized_profit_usd:
+    description: Aggregated realized profit for spends executed on the metric date.
+    dependencies:
+    - utxo.spent
+    - price_oracle
+    docs_path: ../docs/metrics/realized_profit_usd.md
+    badge:
+      version: 1.0.0
+      status: verified
+      coverage_pct: 99.5
+      null_ratio: 0.0
+      golden_checks_passed: true
+      deflated_sharpe_score: 0.0
+      no_lookahead: true
+      reproducible: true
+      utxo_snapshot_commit: utxo-spent@4a2988b16c12
+      price_root_commit: price-oracle@18b953253fdb
+      formulas_version: metrics-formulas@metrics.v1+7ca0189cc1328028
+  realized_loss_usd:
+    description: Aggregated realized losses (absolute value of negative profits) for
+      the metric date.
+    dependencies:
+    - utxo.spent
+    - price_oracle
+    docs_path: ../docs/metrics/realized_loss_usd.md
+    badge:
+      version: 1.0.0
+      status: verified
+      coverage_pct: 99.5
+      null_ratio: 0.0
+      golden_checks_passed: true
+      deflated_sharpe_score: 0.0
+      no_lookahead: true
+      reproducible: true
+      utxo_snapshot_commit: utxo-spent@4a2988b16c12
+      price_root_commit: price-oracle@18b953253fdb
+      formulas_version: metrics-formulas@metrics.v1+7ca0189cc1328028
+  realized_profit_loss_ratio:
+    description: Ratio of realized profits to realized losses for the metric date.
+    dependencies:
+    - utxo.spent
+    - price_oracle
+    docs_path: ../docs/metrics/realized_profit_loss_ratio.md
+    badge:
+      version: 1.0.0
+      status: verified
+      coverage_pct: 99.5
+      null_ratio: 0.001
+      golden_checks_passed: true
+      deflated_sharpe_score: 0.0
+      no_lookahead: true
+      reproducible: true
+      utxo_snapshot_commit: utxo-spent@4a2988b16c12
+      price_root_commit: price-oracle@18b953253fdb
+      formulas_version: metrics-formulas@metrics.v1+7ca0189cc1328028
+  sopr:
+    description: Spent Output Profit Ratio computed as realized value divided by cost
+      basis for the day.
+    dependencies:
+    - utxo.spent
+    - price_oracle
+    docs_path: ../docs/metrics/sopr.md
+    badge:
+      version: 1.0.0
+      status: verified
+      coverage_pct: 99.5
+      null_ratio: 0.0
+      golden_checks_passed: true
+      deflated_sharpe_score: 0.43
+      no_lookahead: true
+      reproducible: true
+      utxo_snapshot_commit: utxo-spent@4a2988b16c12
+      price_root_commit: price-oracle@18b953253fdb
+      formulas_version: metrics-formulas@metrics.v1+7ca0189cc1328028
+  asopr:
+    description: Adjusted SOPR excluding UTXOs with holding period under one day.
+    dependencies:
+    - utxo.spent
+    - price_oracle
+    docs_path: ../docs/metrics/asopr.md
+    badge:
+      version: 1.0.0
+      status: verified
+      coverage_pct: 99.0
+      null_ratio: 0.0
+      golden_checks_passed: true
+      deflated_sharpe_score: 0.4
+      no_lookahead: true
+      reproducible: true
+      utxo_snapshot_commit: utxo-spent@4a2988b16c12
+      price_root_commit: price-oracle@18b953253fdb
+      formulas_version: metrics-formulas@metrics.v1+7ca0189cc1328028
+  mvrv:
+    description: Market value to realized value ratio for outstanding supply.
+    dependencies:
+    - utxo.snapshots
+    - price_oracle
+    docs_path: ../docs/metrics/mvrv.md
+    badge:
+      version: 1.0.0
+      status: verified
+      coverage_pct: 100.0
+      null_ratio: 0.0
+      golden_checks_passed: true
+      deflated_sharpe_score: 0.28
+      no_lookahead: true
+      reproducible: true
+      utxo_snapshot_commit: utxo-snapshots@f7b2d9a9e05a
+      price_root_commit: price-oracle@18b953253fdb
+      formulas_version: metrics-formulas@metrics.v1+7ca0189cc1328028
+  mvrv_zscore:
+    description: Z-score of market minus realized value over trailing window.
+    dependencies:
+    - utxo.snapshots
+    - price_oracle
+    docs_path: ../docs/metrics/mvrv_zscore.md
+    badge:
+      version: 1.0.0
+      status: verified
+      coverage_pct: 100.0
+      null_ratio: 0.0
+      golden_checks_passed: true
+      deflated_sharpe_score: 0.27
+      no_lookahead: true
+      reproducible: true
+      utxo_snapshot_commit: utxo-snapshots@f7b2d9a9e05a
+      price_root_commit: price-oracle@18b953253fdb
+      formulas_version: metrics-formulas@metrics.v1+7ca0189cc1328028
+  nupl:
+    description: Net Unrealized Profit/Loss computed as (market - realized)/market.
+    dependencies:
+    - utxo.snapshots
+    - price_oracle
+    docs_path: ../docs/metrics/nupl.md
+    badge:
+      version: 1.0.0
+      status: verified
+      coverage_pct: 100.0
+      null_ratio: 0.0
+      golden_checks_passed: true
+      deflated_sharpe_score: 0.22
+      no_lookahead: true
+      reproducible: true
+      utxo_snapshot_commit: utxo-snapshots@f7b2d9a9e05a
+      price_root_commit: price-oracle@18b953253fdb
+      formulas_version: metrics-formulas@metrics.v1+7ca0189cc1328028
+  cdd:
+    description: Coin Days Destroyed aggregated for spends on the metric date.
+    dependencies:
+    - utxo.spent
+    docs_path: ../docs/metrics/cdd.md
+    badge:
+      version: 1.0.0
+      status: verified
+      coverage_pct: 99.5
+      null_ratio: 0.0
+      golden_checks_passed: true
+      deflated_sharpe_score: 0.0
+      no_lookahead: true
+      reproducible: true
+      utxo_snapshot_commit: utxo-spent@4a2988b16c12
+      price_root_commit: price-oracle@18b953253fdb
+      formulas_version: metrics-formulas@metrics.v1+7ca0189cc1328028
+  adjusted_cdd:
+    description: Coin Days Destroyed normalized by spent volume for the metric date.
+    dependencies:
+    - utxo.spent
+    docs_path: ../docs/metrics/adjusted_cdd.md
+    badge:
+      version: 1.0.0
+      status: verified
+      coverage_pct: 99.5
+      null_ratio: 0.001
+      golden_checks_passed: true
+      deflated_sharpe_score: 0.0
+      no_lookahead: true
+      reproducible: true
+      utxo_snapshot_commit: utxo-spent@4a2988b16c12
+      price_root_commit: price-oracle@18b953253fdb
+      formulas_version: metrics-formulas@metrics.v1+7ca0189cc1328028
+  dormancy_flow:
+    description: Dormancy flow calculated as market capitalization divided by rolling
+      Coin Days Destroyed.
+    dependencies:
+    - utxo.spent
+    - price_oracle
+    docs_path: ../docs/metrics/dormancy_flow.md
+    badge:
+      version: 1.0.0
+      status: verified
+      coverage_pct: 99.0
+      null_ratio: 0.001
+      golden_checks_passed: true
+      deflated_sharpe_score: 0.0
+      no_lookahead: true
+      reproducible: true
+      utxo_snapshot_commit: utxo-spent@4a2988b16c12
+      price_root_commit: price-oracle@18b953253fdb
+      formulas_version: metrics-formulas@metrics.v1+7ca0189cc1328028
+  utxo_profit_share:
+    description: Share of outstanding supply currently in profit relative to cost
+      basis.
+    dependencies:
+    - utxo.snapshots
+    - price_oracle
+    docs_path: ../docs/metrics/utxo_profit_share.md
+    badge:
+      version: 1.0.0
+      status: verified
+      coverage_pct: 100.0
+      null_ratio: 0.0
+      golden_checks_passed: true
+      deflated_sharpe_score: 0.21
+      no_lookahead: true
+      reproducible: true
+      utxo_snapshot_commit: utxo-snapshots@f7b2d9a9e05a
+      price_root_commit: price-oracle@18b953253fdb
+      formulas_version: metrics-formulas@metrics.v1+7ca0189cc1328028
+  drawdown_pct:
+    description: Percentage drawdown from trailing price maximum.
+    dependencies:
+    - price_oracle
+    docs_path: ../docs/metrics/drawdown_pct.md
+    badge:
+      version: 1.0.0
+      status: verified
+      coverage_pct: 100.0
+      null_ratio: 0.0
+      golden_checks_passed: true
+      deflated_sharpe_score: 0.0
+      no_lookahead: true
+      reproducible: true
+      utxo_snapshot_commit: utxo-snapshots@f7b2d9a9e05a
+      price_root_commit: price-oracle@18b953253fdb
+      formulas_version: metrics-formulas@metrics.v1+7ca0189cc1328028
+  supply_btc:
+    description: Outstanding UTXO supply expressed in BTC units.
+    dependencies:
+    - utxo.snapshots
+    docs_path: ../docs/metrics/supply_btc.md
+    badge:
+      version: 1.0.0
+      status: verified
+      coverage_pct: 100.0
+      null_ratio: 0.0
+      golden_checks_passed: true
+      deflated_sharpe_score: 0.0
+      no_lookahead: true
+      reproducible: true
+      utxo_snapshot_commit: utxo-snapshots@f7b2d9a9e05a
+      price_root_commit: price-oracle@18b953253fdb
+      formulas_version: metrics-formulas@metrics.v1+7ca0189cc1328028
+  supply_sats:
+    description: Outstanding UTXO supply expressed in satoshis.
+    dependencies:
+    - utxo.snapshots
+    docs_path: ../docs/metrics/supply_sats.md
+    badge:
+      version: 1.0.0
+      status: verified
+      coverage_pct: 100.0
+      null_ratio: 0.0
+      golden_checks_passed: true
+      deflated_sharpe_score: 0.0
+      no_lookahead: true
+      reproducible: true
+      utxo_snapshot_commit: utxo-snapshots@f7b2d9a9e05a
+      price_root_commit: price-oracle@18b953253fdb
+      formulas_version: metrics-formulas@metrics.v1+7ca0189cc1328028
+  supply_cost_basis_usd:
+    description: Aggregate USD cost basis for the current UTXO set.
+    dependencies:
+    - utxo.snapshots
+    docs_path: ../docs/metrics/supply_cost_basis_usd.md
+    badge:
+      version: 1.0.0
+      status: verified
+      coverage_pct: 100.0
+      null_ratio: 0.0
+      golden_checks_passed: true
+      deflated_sharpe_score: 0.0
+      no_lookahead: true
+      reproducible: true
+      utxo_snapshot_commit: utxo-snapshots@f7b2d9a9e05a
+      price_root_commit: price-oracle@18b953253fdb
+      formulas_version: metrics-formulas@metrics.v1+7ca0189cc1328028
