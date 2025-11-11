@@ -18,17 +18,28 @@ duckdb = "^0.10.0"
 rich = "^13.7.0"
 tenacity = "^8.5.0"
 tzdata = "^2024.1"
+pandas = "^2.2.2"
+scikit-learn = "^1.5.2"
+xgboost = "^2.1.1"
+torch = "^2.4.1"
+matplotlib = "^3.9.2"
+boruta = "^0.3"
+joblib = "^1.4.2"
+
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^8.2.0"
 pytest-mock = "^3.14.0"
 ruff = "^0.6.1"
 mypy = "^1.11.0"
+mkdocs = "^1.6.0"
 
 [tool.poetry.scripts]
 onchain = "src.ingest.cli:app"
 price-oracle = "src.price_oracle.cli:app"
 onchain-utxo = "src.utxo.cli:app"
+onchain-metrics = "src.metrics.cli:app"
+onchain-models = "src.models.cli:app"
 
 [tool.ruff]
 line-length = 100

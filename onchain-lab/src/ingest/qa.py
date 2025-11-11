@@ -1,10 +1,12 @@
 from __future__ import annotations
 
+import glob
 import json
+import string
 from dataclasses import dataclass
 from datetime import date, datetime, time, timezone, timedelta
 from pathlib import Path
-from typing import Dict, Iterable, List, Optional
+from typing import Dict, List, Optional
 
 import duckdb
 
@@ -58,6 +60,58 @@ def _format_pct(delta: float) -> str:
     return f"{delta:.4f}%"
 
 
+def _template_glob(template: str) -> str:
+    formatter = string.Formatter()
+    parts: List[str] = []
+    for literal, field_name, _, _ in formatter.parse(template):
+        parts.append(literal)
+        if field_name is not None:
+            parts.append("*")
+    return "".join(parts)
+
+
+def _partition_files(config: IngestConfig, key: str) -> List[str]:
+    template = config.partitions[key]
+    fragment = _template_glob(template)
+    base = Path(fragment)
+    if not base.is_absolute():
+        base = config.data_root / base
+
+    if str(base).lower().endswith(".parquet"):
+        pattern = str(base)
+    else:
+        pattern = str(base / "**" / "*.parquet")
+
+    matches = glob.glob(pattern, recursive=True)
+    return sorted(matches)
+
+
+def _format_timestamp(value: datetime) -> str:
+    normalized = value.astimezone(timezone.utc).isoformat()
+    normalized = normalized.replace("T", " ")
+    return normalized.replace("'", "''")
+
+
+def _register_view(
+    connection: duckdb.DuckDBPyConnection,
+    *,
+    name: str,
+    files: List[str],
+    start: datetime | None = None,
+    end: datetime | None = None,
+) -> None:
+    relation = connection.read_parquet(files)
+    if start is not None and end is not None:
+        start_text = _format_timestamp(start)
+        end_text = _format_timestamp(end)
+        predicate = (
+            f"time_utc >= TIMESTAMPTZ '{start_text}' "
+            f"AND time_utc < TIMESTAMPTZ '{end_text}'"
+        )
+        relation = relation.filter(predicate)
+    relation.create_view(name, replace=True)
+
+
 def run_golden_day_checks(
     *,
     target: date,
@@ -77,18 +131,10 @@ def run_golden_day_checks(
 
     start, end = _day_bounds(target)
     con = _duckdb_connect()
-    blocks_path = (data_root / "blocks").glob("**/*.parquet")
-    tx_path = (data_root / "tx").glob("**/*.parquet")
-    txin_path = (data_root / "txin").glob("**/*.parquet")
-    txout_path = (data_root / "txout").glob("**/*.parquet")
-
-    def _expand(paths: Iterable[Path]) -> List[str]:
-        return [str(p) for p in paths]
-
-    block_files = _expand(blocks_path)
-    tx_files = _expand(tx_path)
-    txin_files = _expand(txin_path)
-    txout_files = _expand(txout_path)
+    block_files = _partition_files(cfg, "blocks")
+    tx_files = _partition_files(cfg, "transactions")
+    txin_files = _partition_files(cfg, "txin")
+    txout_files = _partition_files(cfg, "txout")
 
     if not block_files or not tx_files or not txin_files or not txout_files:
         raise QAError("Parquet datasets incomplete for QA check.")
@@ -96,44 +142,31 @@ def run_golden_day_checks(
     metrics = None
 
     try:
-        con.execute(
-            """
-            CREATE OR REPLACE VIEW day_blocks AS
-            SELECT * FROM read_parquet($1)
-            WHERE time_utc >= $2 AND time_utc < $3;
-            """,
-            [block_files, start, end],
+        _register_view(con, name="day_blocks", files=block_files, start=start, end=end)
+        _register_view(
+            con, name="day_transactions", files=tx_files, start=start, end=end
         )
-
-        con.execute(
-            """
-            CREATE OR REPLACE VIEW day_transactions AS
-            SELECT * FROM read_parquet($1)
-            WHERE time_utc >= $2 AND time_utc < $3;
-            """,
-            [tx_files, start, end],
-        )
+        _register_view(con, name="all_txin", files=txin_files)
+        _register_view(con, name="all_txout", files=txout_files)
 
         con.execute(
             """
             CREATE OR REPLACE VIEW coinbase_txids AS
             SELECT DISTINCT t.txid
             FROM day_transactions AS t
-            INNER JOIN read_parquet($1) AS vin
+            INNER JOIN all_txin AS vin
                 ON t.txid = vin.txid
             WHERE vin.coinbase = TRUE;
-            """,
-            [txin_files],
+            """
         )
 
         con.execute(
             """
             CREATE OR REPLACE VIEW day_coinbase AS
             SELECT o.value_sats
-            FROM read_parquet($1) AS o
+            FROM all_txout AS o
             INNER JOIN coinbase_txids AS c ON o.txid = c.txid;
-            """,
-            [txout_files],
+            """
         )
 
         metrics = con.execute(

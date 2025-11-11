@@ -9,7 +9,7 @@ compression: "zstd"
 zstd_level: 6
 rpc:
   host: "localhost"
-  port: 8332
+  port: 18443
   user_env: "BTC_RPC_USER"
   pass_env: "BTC_RPC_PASS"
 limits:

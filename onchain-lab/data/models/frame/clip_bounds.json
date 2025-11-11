@@ -1,0 +1,426 @@
+{
+  "adjusted_cdd": [
+    0.0,
+    0.0
+  ],
+  "adjusted_cdd_lag1": [
+    0.0,
+    0.0
+  ],
+  "adjusted_cdd_lag2": [
+    0.0,
+    0.0
+  ],
+  "adjusted_cdd_lag3": [
+    0.0,
+    0.0
+  ],
+  "adjusted_cdd_lag5": [
+    0.0,
+    0.0
+  ],
+  "cdd": [
+    0.0,
+    0.0
+  ],
+  "cdd_lag1": [
+    0.0,
+    0.0
+  ],
+  "cdd_lag2": [
+    0.0,
+    0.0
+  ],
+  "cdd_lag3": [
+    0.0,
+    0.0
+  ],
+  "cdd_lag5": [
+    0.0,
+    0.0
+  ],
+  "drawdown_pct": [
+    -13.372994741628926,
+    0.0
+  ],
+  "drawdown_pct_lag1": [
+    -13.372994741628926,
+    0.0
+  ],
+  "drawdown_pct_lag2": [
+    -13.372994741628926,
+    0.0
+  ],
+  "drawdown_pct_lag3": [
+    -13.372994741628926,
+    0.0
+  ],
+  "drawdown_pct_lag5": [
+    -13.372994741628926,
+    0.0
+  ],
+  "hodl_share_000_001d": [
+    0.0,
+    0.0
+  ],
+  "hodl_share_000_001d_lag1": [
+    0.0,
+    0.0
+  ],
+  "hodl_share_000_001d_lag2": [
+    0.0,
+    0.0
+  ],
+  "hodl_share_000_001d_lag3": [
+    0.0,
+    0.0
+  ],
+  "hodl_share_000_001d_lag5": [
+    0.0,
+    0.0
+  ],
+  "hodl_share_001_007d": [
+    0.0,
+    0.0
+  ],
+  "hodl_share_001_007d_lag1": [
+    0.0,
+    0.0
+  ],
+  "hodl_share_001_007d_lag2": [
+    0.0,
+    0.0
+  ],
+  "hodl_share_001_007d_lag3": [
+    0.0,
+    0.0
+  ],
+  "hodl_share_001_007d_lag5": [
+    0.0,
+    0.0
+  ],
+  "hodl_share_007_030d": [
+    0.0,
+    0.0
+  ],
+  "hodl_share_007_030d_lag1": [
+    0.0,
+    0.0
+  ],
+  "hodl_share_007_030d_lag2": [
+    0.0,
+    0.0
+  ],
+  "hodl_share_007_030d_lag3": [
+    0.0,
+    0.0
+  ],
+  "hodl_share_007_030d_lag5": [
+    0.0,
+    0.0
+  ],
+  "hodl_share_030_180d": [
+    0.0,
+    0.0
+  ],
+  "hodl_share_030_180d_lag1": [
+    0.0,
+    0.0
+  ],
+  "hodl_share_030_180d_lag2": [
+    0.0,
+    0.0
+  ],
+  "hodl_share_030_180d_lag3": [
+    0.0,
+    0.0
+  ],
+  "hodl_share_030_180d_lag5": [
+    0.0,
+    0.0
+  ],
+  "hodl_share_180_365d": [
+    0.0,
+    0.0
+  ],
+  "hodl_share_180_365d_lag1": [
+    0.0,
+    0.0
+  ],
+  "hodl_share_180_365d_lag2": [
+    0.0,
+    0.0
+  ],
+  "hodl_share_180_365d_lag3": [
+    0.0,
+    0.0
+  ],
+  "hodl_share_180_365d_lag5": [
+    0.0,
+    0.0
+  ],
+  "hodl_share_365d_plus": [
+    1.0,
+    1.0
+  ],
+  "hodl_share_365d_plus_lag1": [
+    1.0,
+    1.0
+  ],
+  "hodl_share_365d_plus_lag2": [
+    1.0,
+    1.0
+  ],
+  "hodl_share_365d_plus_lag3": [
+    1.0,
+    1.0
+  ],
+  "hodl_share_365d_plus_lag5": [
+    1.0,
+    1.0
+  ],
+  "market_value_usd": [
+    0.0,
+    0.0
+  ],
+  "market_value_usd_lag1": [
+    0.0,
+    0.0
+  ],
+  "market_value_usd_lag2": [
+    0.0,
+    0.0
+  ],
+  "market_value_usd_lag3": [
+    0.0,
+    0.0
+  ],
+  "market_value_usd_lag5": [
+    0.0,
+    0.0
+  ],
+  "mvrv": [
+    0.0,
+    0.0
+  ],
+  "mvrv_lag1": [
+    0.0,
+    0.0
+  ],
+  "mvrv_lag2": [
+    0.0,
+    0.0
+  ],
+  "mvrv_lag3": [
+    0.0,
+    0.0
+  ],
+  "mvrv_lag5": [
+    0.0,
+    0.0
+  ],
+  "nupl": [
+    0.0,
+    0.0
+  ],
+  "nupl_lag1": [
+    0.0,
+    0.0
+  ],
+  "nupl_lag2": [
+    0.0,
+    0.0
+  ],
+  "nupl_lag3": [
+    0.0,
+    0.0
+  ],
+  "nupl_lag5": [
+    0.0,
+    0.0
+  ],
+  "price_close": [
+    29954.52504,
+    34941.80896
+  ],
+  "price_close_lag1": [
+    29954.52504,
+    34941.80896
+  ],
+  "price_close_lag2": [
+    29954.52504,
+    34941.80896
+  ],
+  "price_close_lag3": [
+    29954.52504,
+    34941.80896
+  ],
+  "price_close_lag5": [
+    29954.52504,
+    34941.80896
+  ],
+  "realized_loss_usd": [
+    0.0,
+    0.0
+  ],
+  "realized_loss_usd_lag1": [
+    0.0,
+    0.0
+  ],
+  "realized_loss_usd_lag2": [
+    0.0,
+    0.0
+  ],
+  "realized_loss_usd_lag3": [
+    0.0,
+    0.0
+  ],
+  "realized_loss_usd_lag5": [
+    0.0,
+    0.0
+  ],
+  "realized_profit_loss_ratio": [
+    0.0,
+    0.0
+  ],
+  "realized_profit_loss_ratio_lag1": [
+    0.0,
+    0.0
+  ],
+  "realized_profit_loss_ratio_lag2": [
+    0.0,
+    0.0
+  ],
+  "realized_profit_loss_ratio_lag3": [
+    0.0,
+    0.0
+  ],
+  "realized_profit_loss_ratio_lag5": [
+    0.0,
+    0.0
+  ],
+  "realized_profit_usd": [
+    0.0,
+    0.0
+  ],
+  "realized_profit_usd_lag1": [
+    0.0,
+    0.0
+  ],
+  "realized_profit_usd_lag2": [
+    0.0,
+    0.0
+  ],
+  "realized_profit_usd_lag3": [
+    0.0,
+    0.0
+  ],
+  "realized_profit_usd_lag5": [
+    0.0,
+    0.0
+  ],
+  "realized_value_usd": [
+    0.0,
+    0.0
+  ],
+  "realized_value_usd_lag1": [
+    0.0,
+    0.0
+  ],
+  "realized_value_usd_lag2": [
+    0.0,
+    0.0
+  ],
+  "realized_value_usd_lag3": [
+    0.0,
+    0.0
+  ],
+  "realized_value_usd_lag5": [
+    0.0,
+    0.0
+  ],
+  "sopr": [
+    0.0,
+    0.0
+  ],
+  "sopr_lag1": [
+    0.0,
+    0.0
+  ],
+  "sopr_lag2": [
+    0.0,
+    0.0
+  ],
+  "sopr_lag3": [
+    0.0,
+    0.0
+  ],
+  "sopr_lag5": [
+    0.0,
+    0.0
+  ],
+  "supply_btc": [
+    50.0,
+    50.0
+  ],
+  "supply_btc_lag1": [
+    50.0,
+    50.0
+  ],
+  "supply_btc_lag2": [
+    50.0,
+    50.0
+  ],
+  "supply_btc_lag3": [
+    50.0,
+    50.0
+  ],
+  "supply_btc_lag5": [
+    50.0,
+    50.0
+  ],
+  "supply_cost_basis_usd": [
+    0.0,
+    0.0
+  ],
+  "supply_cost_basis_usd_lag1": [
+    0.0,
+    0.0
+  ],
+  "supply_cost_basis_usd_lag2": [
+    0.0,
+    0.0
+  ],
+  "supply_cost_basis_usd_lag3": [
+    0.0,
+    0.0
+  ],
+  "supply_cost_basis_usd_lag5": [
+    0.0,
+    0.0
+  ],
+  "supply_sats": [
+    5000000000.0,
+    5000000000.0
+  ],
+  "utxo_profit_share": [
+    0.0,
+    0.0
+  ],
+  "utxo_profit_share_lag1": [
+    0.0,
+    0.0
+  ],
+  "utxo_profit_share_lag2": [
+    0.0,
+    0.0
+  ],
+  "utxo_profit_share_lag3": [
+    0.0,
+    0.0
+  ],
+  "utxo_profit_share_lag5": [
+    0.0,
+    0.0
+  ]
+}

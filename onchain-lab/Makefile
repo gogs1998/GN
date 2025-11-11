@@ -27,3 +27,7 @@ ingest:
 
 verify:
 	poetry run onchain ingest verify --date 2020-05-11
+
+docs:
+	poetry run onchain-metrics docs
+	poetry run mkdocs build --strict

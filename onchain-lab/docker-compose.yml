@@ -1,23 +1,23 @@
-version: "3.8"
-
 services:
   bitcoind:
-    image: ruimarinho/bitcoin-core:26
+    image: bitcoin/bitcoin:27.2   # or ruimarinho/bitcoin-core:27.2
     container_name: onchain-bitcoind
     restart: unless-stopped
-    environment:
-      - BITCOIN_RPCUSER=${BTC_RPC_USER}
-      - BITCOIN_RPCPASSWORD=${BTC_RPC_PASS}
-      - BITCOIN_EXTRA_ARGS=-txindex=1 -server=1 -rpcallowip=0.0.0.0/0 -rpcbind=0.0.0.0 -dbcache=16384 -maxmempool=500 -prune=0
+    command:
+      - -regtest=1                 # or remove for mainnet
+      - -server=1
+      - -txindex=1
+      - -rpcbind=0.0.0.0
+      - -rpcallowip=0.0.0.0/0
+      - -rpcuser=${BTC_RPC_USER}
+      - -rpcpassword=${BTC_RPC_PASS}
+      - -fallbackfee=0.0002
+      - -printtoconsole
     ports:
-      - "8332:8332"
-      - "8333:8333"
+      - "18443:18443"              # regtest RPC; use 8332:8332 for mainnet
     volumes:
-      - ./data/bitcoind:/home/bitcoin/.bitcoin
-      - ./docker/bitcoind/bitcoin.conf:/home/bitcoin/.bitcoin/bitcoin.conf:ro
-    healthcheck:
-      test: ["CMD", "bitcoin-cli", "-conf=/home/bitcoin/.bitcoin/bitcoin.conf", "getblockcount"]
-      interval: 30s
-      timeout: 10s
-      retries: 5
-      start_period: 60s
+      - bitcoin_data:/home/bitcoin/.bitcoin  # named volume (no Windows bind)
+
+volumes:
+  bitcoin_data:
+

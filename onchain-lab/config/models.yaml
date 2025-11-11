@@ -1,0 +1,99 @@
+data:
+  metrics_parquet: "../data/metrics/daily/metrics.parquet"
+  out_root: "../data/models"
+  artifacts_root: "../artifacts/models"
+
+target:
+  label_horizon_days: 1
+  lookback_days: 30
+  min_history_days: 400
+
+features:
+  include:
+    - price_close
+    - realized_profit_usd
+    - realized_loss_usd
+    - realized_profit_loss_ratio
+    - sopr
+    - asopr
+    - mvrv
+    - mvrv_zscore
+    - nupl
+    - cdd
+    - adjusted_cdd
+    - dormancy_flow
+    - utxo_profit_share
+    - drawdown_pct
+    - market_value_usd
+    - realized_value_usd
+    - supply_btc
+    - supply_cost_basis_usd
+  hodl_pattern: "hodl_share_*"
+  transforms:
+    scale: "standard"
+    diffs: []
+    lags: [1, 2, 3, 5]
+    clip_pct: 0.001
+
+splits:
+  scheme: "forward_chaining"
+  anchors:
+    train_end: "2025-02-28"
+    val_end: "2025-07-31"
+    test_start: "2025-08-01"
+  n_splits: 1
+  seed: 42
+
+boruta:
+  enabled: true
+  max_iter: 100
+  perc: 85
+  estimator: "xgboost"
+
+models:
+  enabled: ["logreg", "xgboost", "cnn_lstm"]
+  logreg:
+    C: 1.0
+    penalty: "l2"
+    max_iter: 500
+    class_weight: null
+  xgboost:
+    n_estimators: 500
+    learning_rate: 0.03
+    max_depth: 4
+    subsample: 0.9
+    colsample_bytree: 0.9
+    reg_lambda: 1.0
+    early_stopping_rounds: 50
+  cnn_lstm:
+    epochs: 50
+    batch_size: 64
+    lr: 0.001
+    conv_filters: 16
+    conv_kernel: 3
+    lstm_units: 32
+    dropout: 0.2
+    patience: 6
+    framework: "pytorch"
+
+decision:
+  prob_threshold: 0.55
+  side: "long_flat"
+
+costs:
+  fee_bps: 5
+  slippage_bps: 5
+  execution_timing: "next_close"
+
+sizing:
+  mode: "fixed"
+  fixed_weight: 1.0
+  kelly_cap: 0.25
+
+qa:
+  forbid_future_lookahead: true
+  min_oos_start: "2018-01-01"
+  tolerance_pct: 0.5
+
+registry:
+  path: "../data/models/registry.json"

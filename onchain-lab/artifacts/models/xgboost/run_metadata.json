@@ -1,0 +1,36 @@
+{
+  "artifacts": {
+    "baseline_signals": "D:\\VSCode\\GN\\onchain-lab\\data\\models\\baseline_signals.parquet",
+    "model": "D:\\VSCode\\GN\\onchain-lab\\artifacts\\models\\xgboost\\model.xgb.joblib",
+    "predictions": "D:\\VSCode\\GN\\onchain-lab\\data\\models\\xgboost\\predictions.parquet",
+    "signals": "D:\\VSCode\\GN\\onchain-lab\\data\\models\\xgboost\\signals.parquet"
+  },
+  "config": {
+    "decision_side": "long_flat",
+    "decision_threshold": 0.55,
+    "label_horizon_days": 1,
+    "lookback_days": 30
+  },
+  "feature_count": 10,
+  "feature_hash": "8fc30a646b2cb22a",
+  "feature_source": "boruta",
+  "features": [
+    "price_close",
+    "drawdown_pct",
+    "price_close_lag1",
+    "price_close_lag2",
+    "price_close_lag3",
+    "price_close_lag5",
+    "drawdown_pct_lag1",
+    "drawdown_pct_lag2",
+    "drawdown_pct_lag3",
+    "drawdown_pct_lag5"
+  ],
+  "model": "xgboost",
+  "splits": {
+    "test": 98,
+    "train": 316,
+    "val": 153
+  },
+  "timestamp": "2025-11-10T19:51:25.628970+00:00"
+}

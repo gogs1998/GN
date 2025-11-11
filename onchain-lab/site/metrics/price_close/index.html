@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+      <link rel="shortcut icon" href="../../img/favicon.ico" />
+    <title>Price Close - Onchain Lab Metrics</title>
+    <link rel="stylesheet" href="../../css/theme.css" />
+    <link rel="stylesheet" href="../../css/theme_extra.css" />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github.min.css" />
+    
+      <script>
+        // Current page data
+        var mkdocs_page_name = "Price Close";
+        var mkdocs_page_input_path = "metrics\\price_close.md";
+        var mkdocs_page_url = null;
+      </script>
+    
+    <!--[if lt IE 9]>
+      <script src="../../js/html5shiv.min.js"></script>
+    <![endif]-->
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
+      <script>hljs.highlightAll();</script> 
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
+    <div class="wy-side-scroll">
+      <div class="wy-side-nav-search">
+          <a href="../.." class="icon icon-home"> Onchain Lab Metrics
+        </a><div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+      <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" title="Type search term here" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../..">Overview</a>
+                </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Metrics</span></p>
+              <ul class="current">
+                  <li class="toctree-l1"><a class="reference internal" href="../adjusted_cdd/">Adjusted Cdd</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../asopr/">Asopr</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../cdd/">Cdd</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../dormancy_flow/">Dormancy Flow</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../drawdown_pct/">Drawdown Pct</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../market_value_usd/">Market Value Usd</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../mvrv/">Mvrv</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../mvrv_zscore/">Mvrv Zscore</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../nupl/">Nupl</a>
+                  </li>
+                  <li class="toctree-l1 current"><a class="reference internal current" href="#">Price Close</a>
+    <ul class="current">
+    <li class="toctree-l2"><a class="reference internal" href="#definition">Definition</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#formula">Formula</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#qa-badge">QA Badge</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#provenance">Provenance</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#known-caveats">Known Caveats</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#reproduction">Reproduction</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#golden-day-snapshot">Golden Day Snapshot</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#citations">Citations</a>
+    </li>
+    </ul>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../realized_loss_usd/">Realized Loss Usd</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../realized_profit_loss_ratio/">Realized Profit Loss Ratio</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../realized_profit_usd/">Realized Profit Usd</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../realized_value_usd/">Realized Value Usd</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../sopr/">Sopr</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../supply_btc/">Supply Btc</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../supply_cost_basis_usd/">Supply Cost Basis Usd</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../supply_sats/">Supply Sats</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../utxo_profit_share/">Utxo Profit Share</a>
+                  </li>
+              </ul>
+      </div>
+    </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+      <nav class="wy-nav-top" role="navigation" aria-label="Mobile navigation menu">
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../..">Onchain Lab Metrics</a>
+        
+      </nav>
+      <div class="wy-nav-content">
+        <div class="rst-content"><div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="../.." class="icon icon-home" aria-label="Docs"></a></li>
+          <li class="breadcrumb-item">Metrics</li>
+      <li class="breadcrumb-item active">Price Close</li>
+    <li class="wy-breadcrumbs-aside">
+    </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+            <div class="section" itemprop="articleBody">
+              
+                <h1 id="price-close">Price Close</h1>
+<h2 id="definition">Definition</h2>
+<p>Daily closing price in USD from the approved price oracle.</p>
+<h2 id="formula">Formula</h2>
+<pre><code>Closing price in USD sourced from the approved oracle snapshot at 23:00 UTC.
+</code></pre>
+<h2 id="qa-badge">QA Badge</h2>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Status</td>
+<td>verified</td>
+</tr>
+<tr>
+<td>Version</td>
+<td>1.0.0</td>
+</tr>
+<tr>
+<td>Coverage %</td>
+<td>100.00</td>
+</tr>
+<tr>
+<td>Null Ratio</td>
+<td>0.0000</td>
+</tr>
+<tr>
+<td>Deflated Sharpe</td>
+<td>0.00</td>
+</tr>
+<tr>
+<td>Golden Checks Passed</td>
+<td>True</td>
+</tr>
+<tr>
+<td>No Lookahead</td>
+<td>True</td>
+</tr>
+<tr>
+<td>Reproducible</td>
+<td>True</td>
+</tr>
+</tbody>
+</table>
+<h2 id="provenance">Provenance</h2>
+<ul>
+<li>UTXO snapshot commit: utxo-snapshots@0000000</li>
+<li>Price root commit: price-oracle@0000000</li>
+<li>Formulas version: metrics-formulas@v0.1.0</li>
+</ul>
+<h2 id="known-caveats">Known Caveats</h2>
+<ul>
+<li>Pending deeper statistical audit for extreme market regimes.</li>
+</ul>
+<h2 id="reproduction">Reproduction</h2>
+<pre><code class="language-sql">SELECT date, price_close
+FROM read_parquet('data/metrics/daily/metrics.parquet')
+WHERE date BETWEEN '2024-01-01' AND '2024-01-10';
+</code></pre>
+<h2 id="golden-day-snapshot">Golden Day Snapshot</h2>
+<p>Capture the golden day chart or table and store it at <code>images/price_close_golden.png</code> to replace this note.</p>
+<h2 id="citations">Citations</h2>
+<ul>
+<li>Onchain Lab Stage 4 Metrics Specification</li>
+</ul>
+              
+            </div>
+          </div><footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="Footer Navigation">
+        <a href="../nupl/" class="btn btn-neutral float-left" title="Nupl"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+        <a href="../realized_loss_usd/" class="btn btn-neutral float-right" title="Realized Loss Usd">Next <span class="icon icon-circle-arrow-right"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <!-- Copyright etc -->
+  </div>
+
+  Built with <a href="https://www.mkdocs.org/">MkDocs</a> using a <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+</footer>
+          
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+  <div class="rst-versions" role="note" aria-label="Versions">
+  <span class="rst-current-version" data-toggle="rst-current-version">
+    
+    
+      <span><a href="../nupl/" style="color: #fcfcfc">&laquo; Previous</a></span>
+    
+    
+      <span><a href="../realized_loss_usd/" style="color: #fcfcfc">Next &raquo;</a></span>
+    
+  </span>
+</div>
+    <script src="../../js/jquery-3.6.0.min.js"></script>
+    <script>var base_url = "../..";</script>
+    <script src="../../js/theme_extra.js"></script>
+    <script src="../../js/theme.js"></script>
+      <script src="../../search/main.js"></script>
+    <script>
+        jQuery(function () {
+            SphinxRtdTheme.Navigation.enable(true);
+        });
+    </script>
+
+</body>
+</html>

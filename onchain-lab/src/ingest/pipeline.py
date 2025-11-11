@@ -206,13 +206,20 @@ def sync_range(
 
     try:
         for height in range(start_height, end_height + 1):
+            console.log(f"Processing height {height}")
             if height_index.is_done(height):
                 console.log(f"Skipping height {height} (already processed)")
                 continue
 
-            block_hash = created_client.get_block_hash(height)
-            block = created_client.get_block(block_hash, verbosity=2)
-            block_record, tx_records, txin_records, txout_records = _parse_block(height, block)
+            try:
+                block_hash = created_client.get_block_hash(height)
+                console.log(f"Retrieved block hash {block_hash} for height {height}")
+                block = created_client.get_block(block_hash, verbosity=2)
+                console.log(f"Retrieved block data for height {height}")
+                block_record, tx_records, txin_records, txout_records = _parse_block(height, block)
+            except Exception as e:
+                console.log(f"Error processing height {height}: {e}")
+                raise
             bucket = bucket_height(height, cfg.height_bucket_size)
 
             buffers[("blocks", bucket)].append(block_record)
@@ -253,6 +260,7 @@ def sync_range(
             console.log(
                 f"Processed height {height}: blocks=1 tx={len(tx_records)} vin={len(txin_records)} vout={len(txout_records)}"
             )
+            console.log(f"Block hash: {block_record.hash}, Block time: {block_record.time_utc}")
 
         # Final flush
         for key, buffer in list(buffers.items()):
@@ -260,6 +268,9 @@ def sync_range(
 
     except (RPCError, WriterError) as exc:
         console.log(f"Ingestion halted: {exc}")
+        raise
+    except Exception as e:
+        console.log(f"Unexpected error during ingestion: {e}")
         raise
     finally:
         if own_client:

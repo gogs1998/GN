@@ -148,3 +148,72 @@ def test_golden_day_out_of_tolerance(
             config=sample_config,
             references_path=golden_ref_path,
         )
+
+
+def test_golden_day_uses_partition_templates(tmp_path: Path, golden_ref_path: Path) -> None:
+    config = IngestConfig(
+        data_root=tmp_path,
+        partitions={
+            "blocks": "custom/blocks/height={height_bucket}/part-*.parquet",
+            "transactions": "custom/tx/height={height_bucket}/part-*.parquet",
+            "txin": "custom/txin/height={height_bucket}/part-*.parquet",
+            "txout": "custom/txout/height={height_bucket}/part-*.parquet",
+        },
+        height_bucket_size=10000,
+        compression="zstd",
+        zstd_level=6,
+        rpc=RPCConfig(host="localhost", port=8332, user_env="USER", pass_env="PASS"),
+        limits=LimitsConfig(max_blocks_per_run=1000, io_batch_size=50),
+        qa=QAConfig(golden_days=[date(2020, 5, 11)], tolerance_pct=0.1),
+    )
+
+    ts0 = datetime(2020, 5, 11, 0, 0, tzinfo=timezone.utc)
+    ts1 = datetime(2020, 5, 11, 0, 10, tzinfo=timezone.utc)
+
+    blocks = [
+        Block(height=630000, hash="hash0", time_utc=ts0, version=1, merkleroot="root0", nonce=0, bits="1d00ffff", size=1000, weight=4000, tx_count=2),
+        Block(height=630001, hash="hash1", time_utc=ts1, version=1, merkleroot="root1", nonce=1, bits="1d00ffff", size=900, weight=3600, tx_count=1),
+        TxIn(txid="coinbase1", idx=0, coinbase=True, prev_txid=None, prev_vout=None, sequence=0),
+    ]
+
+    txs = [
+        Transaction(txid="coinbase0", height=630000, time_utc=ts0, size=150, weight=600, version=2, locktime=0, vin_count=1, vout_count=1),
+        Transaction(txid="tx-normal", height=630000, time_utc=ts0, size=200, weight=800, version=2, locktime=0, vin_count=1, vout_count=2),
+        Transaction(txid="coinbase1", height=630001, time_utc=ts1, size=155, weight=620, version=2, locktime=0, vin_count=1, vout_count=1),
+    ]
+
+    txins = [
+        TxIn(txid="coinbase0", idx=0, coinbase=True, prev_txid=None, prev_vout=None, sequence=0),
+        TxIn(txid="tx-normal", idx=0, coinbase=False, prev_txid="coinbase0", prev_vout=0, sequence=0),
+        TxIn(txid="coinbase1", idx=0, coinbase=True, prev_txid=None, prev_vout=None, sequence=0),
+    ]
+
+    txouts = [
+        TxOut(txid="coinbase0", idx=0, value_sats=625000000, script_type="pubkeyhash", addresses=["addr0"], is_spent=False),
+        TxOut(txid="tx-normal", idx=0, value_sats=1000, script_type="pubkeyhash", addresses=["addr1"], is_spent=False),
+        TxOut(txid="tx-normal", idx=1, value_sats=624999000, script_type="pubkeyhash", addresses=["addr2"], is_spent=False),
+        TxOut(txid="coinbase1", idx=0, value_sats=625000000, script_type="pubkeyhash", addresses=["addr3"], is_spent=False),
+    ]
+
+    base = config.data_root / "custom"
+    (base / "blocks" / "height=0").mkdir(parents=True, exist_ok=True)
+    (base / "tx" / "height=0").mkdir(parents=True, exist_ok=True)
+    (base / "txin" / "height=0").mkdir(parents=True, exist_ok=True)
+    (base / "txout" / "height=0").mkdir(parents=True, exist_ok=True)
+
+    pq.write_table(record_batch_from_models(blocks, block_schema()), base / "blocks" / "height=0" / "part-000.parquet")
+    pq.write_table(record_batch_from_models(txs, transaction_schema()), base / "tx" / "height=0" / "part-000.parquet")
+    pq.write_table(record_batch_from_models(txins, txin_schema()), base / "txin" / "height=0" / "part-000.parquet")
+    pq.write_table(record_batch_from_models(txouts, txout_schema()), base / "txout" / "height=0" / "part-000.parquet")
+
+    metrics = run_golden_day_checks(
+        target=date(2020, 5, 11),
+        config=config,
+        references_path=golden_ref_path,
+    )
+
+    assert metrics == {
+        "blocks": 2,
+        "transactions": 3,
+        "coinbase_sats": 1250000000,
+    }

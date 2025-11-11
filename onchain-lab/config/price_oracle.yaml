@@ -5,7 +5,7 @@ primary: "binance"
 fallback: "coinbase"
 alignment:
   timezone: "UTC"
-  daily_close_hhmm: "00:00"
+  daily_close_hhmm: "23:59"
 qa:
   max_gap_hours: 6
   max_basis_diff_pct: 1.0

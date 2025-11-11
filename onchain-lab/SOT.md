@@ -1408,6 +1408,26 @@ onchain-models signal  --model xgboost --out data/models/baseline_signals.parque
 
 ---
 
+### Stage 5: Model Baselines v0.1 — Implementation Review
+**Date**: 2025-11-10  
+**Delivered by Codex**:
+- Built the modeling stack in `src/models/{frame,boruta,baselines_core,eval,backtest,utils,cli}.py`, wiring leak-free frame construction, Boruta selection, baseline trainers, evaluation, and backtesting with persistent artifacts.
+- Added `config/models.yaml` plus supporting data/artifact directories and registered the Typer entry point `onchain-models = "src.models.cli:app"` in `pyproject.toml` for end-to-end orchestration.
+- Seeded reproducible artifact/registry layouts under `data/models` and `artifacts/models`, including feature hashes, scaler snapshots, and backtest summaries for each baseline.
+- Expanded regression coverage across `tests/models/{test_frame.py,test_boruta.py,test_baselines.py,test_backtest.py,test_no_lookahead.py}` and fixtures to guard against leakage, feature drift, and QA regressions.
+
+**Review Notes**:
+- ✅ `FrameBuilder` now assembles deterministic train/val/test splits, persists scalers, clip bounds, and sequence tensors, and records feature hashes for reproducibility (`src/models/frame.py`, `src/models/utils.py`).
+- ✅ `BorutaRunner` respects train-only fitting, persists selected feature manifests, and falls back gracefully when estimators reject all candidates (`src/models/boruta.py`, `tests/models/test_boruta.py`).
+- ✅ Baseline trainers emit calibrated probabilities, signals, metadata, and registry entries for logistic, XGBoost, and CNN-LSTM models while the CLI coordinates incremental or full runs (`src/models/baselines_core.py`, `src/models/cli.py`, `tests/models/test_baselines.py`).
+- ✅ Backtest engine applies fee/slippage costs, shifts positions to avoid lookahead, enforces QA guardrails, and writes equity plus registry updates (`src/models/backtest.py`, `tests/models/test_backtest.py`).
+- ✅ Repository tests pass with the modeling suite included: `D:/VSCode/GN/.venv/Scripts/python.exe -m pytest -q` (49 passed, 1 warning on `datetime.utcnow()` pending follow-up).
+
+**Status**: ✅ **APPROVED – Stage 5 complete**  
+**Next Step**: Maintain model artifacts alongside transparency work (Stage 6) and plan Stage 7 roadmap milestones.
+
+---
+
 ### Stage 6: Metric QA Badges + Evidence Docs (Specification)
 **Date**: 2025-11-08
 **Approved by**: Claude (pending Codex implementation)
@@ -1645,6 +1665,38 @@ onchain-models signal  --model xgboost --out data/models/baseline_signals.parque
 
 **Status**: ✅ **APPROVED – Blocker cleared**  
 **Next Step**: Address UTXO snapshot boundary handling next.
+
+---
+
+### Stage R1d: UTXO Snapshot Boundary Guard
+**Date**: 2025-11-10  
+**Delivered by Codex**:
+- Updated `src/utxo/snapshots.py` to require spend timestamps strictly exceed the daily close boundary, so outputs spent exactly at the cutover are excluded from the prior-day snapshot.
+- Strengthened `tests/utxo/test_snapshots.py` by capturing baseline counts, validating boundary creation neutrality, and adding a regression that proves spends at the boundary no longer inflate active totals.
+
+**Review Notes**:
+- ✅ Stage R blocker “UTXO snapshots include spends at close boundary” resolved; daily aggregates now honor exclusive upper bounds.
+- ✅ Unit coverage guards both creation-time and spend-time boundary regressions (`pytest tests/utxo/test_snapshots.py -q`).
+- ⚠️ Remaining Stage R blocker: ingest golden-day partition QA.
+
+**Status**: ✅ **APPROVED – Blocker cleared**  
+**Next Step**: Tackle ingest partition QA hardening to close out Stage R.
+
+---
+
+### Stage R1e: Ingest Golden-Day Partition QA Fix
+**Date**: 2025-11-10  
+**Delivered by Codex**:
+- Reworked `src/ingest/qa.py` partition discovery to honor templated file patterns (e.g., `part-*.parquet`) and replaced prepared-statement views with relation-backed registrations so DuckDB loads only the configured parquet files.
+- Updated `tests/ingest/test_qa.py` to assert golden-day QA locates data when partition templates include filename globs, preventing silent regressions when operators customize lake layouts.
+
+**Review Notes**:
+- ✅ Stage R blocker “ingest golden-day partition templates ignored” resolved; QA now respects operator-provided glob patterns and filters against DuckDB relations without binder errors.
+- ✅ Regression suite exercised via `pytest tests/ingest/test_qa.py -q`, covering reference match, tolerance failure, and custom template scenarios.
+- ✅ Broader UTXO suite (`pytest tests/utxo -q`) revalidated after recent snapshot guard, ensuring downstream effects remain green.
+
+**Status**: ✅ **APPROVED – Blocker cleared**  
+**Next Step**: Stage R remediation complete; proceed toward Stage 5 readiness tasks.
 
 ---
 

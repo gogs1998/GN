@@ -1,6 +1,6 @@
 schema_version: metrics.registry.v2
 metadata:
-  generated_at: '2025-11-10T12:28:47Z'
+  generated_at: '2025-11-10T18:51:37Z'
   generator: onchain-metrics.build
 metrics:
   price_close:
@@ -18,8 +18,8 @@ metrics:
       no_lookahead: true
       reproducible: true
       utxo_snapshot_commit: utxo-snapshots@f7b2d9a9e05a
-      price_root_commit: price-oracle@18b953253fdb
-      formulas_version: metrics-formulas@metrics.v1+7ca0189cc1328028
+      price_root_commit: price-oracle@8b2dedfac9da
+      formulas_version: metrics-formulas@metrics.v1+860cc6d13cb94420
   market_value_usd:
     description: Market capitalization computed as outstanding BTC balance multiplied
       by the daily close.
@@ -37,8 +37,8 @@ metrics:
       no_lookahead: true
       reproducible: true
       utxo_snapshot_commit: utxo-snapshots@f7b2d9a9e05a
-      price_root_commit: price-oracle@18b953253fdb
-      formulas_version: metrics-formulas@metrics.v1+7ca0189cc1328028
+      price_root_commit: price-oracle@8b2dedfac9da
+      formulas_version: metrics-formulas@metrics.v1+860cc6d13cb94420
   realized_value_usd:
     description: Total realized capitalization derived from cost basis of current
       UTXO set.
@@ -55,8 +55,8 @@ metrics:
       no_lookahead: true
       reproducible: true
       utxo_snapshot_commit: utxo-snapshots@f7b2d9a9e05a
-      price_root_commit: price-oracle@18b953253fdb
-      formulas_version: metrics-formulas@metrics.v1+7ca0189cc1328028
+      price_root_commit: price-oracle@8b2dedfac9da
+      formulas_version: metrics-formulas@metrics.v1+860cc6d13cb94420
   realized_profit_usd:
     description: Aggregated realized profit for spends executed on the metric date.
     dependencies:
@@ -73,8 +73,8 @@ metrics:
       no_lookahead: true
       reproducible: true
       utxo_snapshot_commit: utxo-spent@4a2988b16c12
-      price_root_commit: price-oracle@18b953253fdb
-      formulas_version: metrics-formulas@metrics.v1+7ca0189cc1328028
+      price_root_commit: price-oracle@8b2dedfac9da
+      formulas_version: metrics-formulas@metrics.v1+860cc6d13cb94420
   realized_loss_usd:
     description: Aggregated realized losses (absolute value of negative profits) for
       the metric date.
@@ -92,8 +92,8 @@ metrics:
       no_lookahead: true
       reproducible: true
       utxo_snapshot_commit: utxo-spent@4a2988b16c12
-      price_root_commit: price-oracle@18b953253fdb
-      formulas_version: metrics-formulas@metrics.v1+7ca0189cc1328028
+      price_root_commit: price-oracle@8b2dedfac9da
+      formulas_version: metrics-formulas@metrics.v1+860cc6d13cb94420
   realized_profit_loss_ratio:
     description: Ratio of realized profits to realized losses for the metric date.
     dependencies:
@@ -110,8 +110,8 @@ metrics:
       no_lookahead: true
       reproducible: true
       utxo_snapshot_commit: utxo-spent@4a2988b16c12
-      price_root_commit: price-oracle@18b953253fdb
-      formulas_version: metrics-formulas@metrics.v1+7ca0189cc1328028
+      price_root_commit: price-oracle@8b2dedfac9da
+      formulas_version: metrics-formulas@metrics.v1+860cc6d13cb94420
   sopr:
     description: Spent Output Profit Ratio computed as realized value divided by cost
       basis for the day.
@@ -129,8 +129,8 @@ metrics:
       no_lookahead: true
       reproducible: true
       utxo_snapshot_commit: utxo-spent@4a2988b16c12
-      price_root_commit: price-oracle@18b953253fdb
-      formulas_version: metrics-formulas@metrics.v1+7ca0189cc1328028
+      price_root_commit: price-oracle@8b2dedfac9da
+      formulas_version: metrics-formulas@metrics.v1+860cc6d13cb94420
   asopr:
     description: Adjusted SOPR excluding UTXOs with holding period under one day.
     dependencies:
@@ -147,8 +147,8 @@ metrics:
       no_lookahead: true
       reproducible: true
       utxo_snapshot_commit: utxo-spent@4a2988b16c12
-      price_root_commit: price-oracle@18b953253fdb
-      formulas_version: metrics-formulas@metrics.v1+7ca0189cc1328028
+      price_root_commit: price-oracle@8b2dedfac9da
+      formulas_version: metrics-formulas@metrics.v1+860cc6d13cb94420
   mvrv:
     description: Market value to realized value ratio for outstanding supply.
     dependencies:
@@ -165,8 +165,8 @@ metrics:
       no_lookahead: true
       reproducible: true
       utxo_snapshot_commit: utxo-snapshots@f7b2d9a9e05a
-      price_root_commit: price-oracle@18b953253fdb
-      formulas_version: metrics-formulas@metrics.v1+7ca0189cc1328028
+      price_root_commit: price-oracle@8b2dedfac9da
+      formulas_version: metrics-formulas@metrics.v1+860cc6d13cb94420
   mvrv_zscore:
     description: Z-score of market minus realized value over trailing window.
     dependencies:
@@ -183,8 +183,8 @@ metrics:
       no_lookahead: true
       reproducible: true
       utxo_snapshot_commit: utxo-snapshots@f7b2d9a9e05a
-      price_root_commit: price-oracle@18b953253fdb
-      formulas_version: metrics-formulas@metrics.v1+7ca0189cc1328028
+      price_root_commit: price-oracle@8b2dedfac9da
+      formulas_version: metrics-formulas@metrics.v1+860cc6d13cb94420
   nupl:
     description: Net Unrealized Profit/Loss computed as (market - realized)/market.
     dependencies:
@@ -201,8 +201,8 @@ metrics:
       no_lookahead: true
       reproducible: true
       utxo_snapshot_commit: utxo-snapshots@f7b2d9a9e05a
-      price_root_commit: price-oracle@18b953253fdb
-      formulas_version: metrics-formulas@metrics.v1+7ca0189cc1328028
+      price_root_commit: price-oracle@8b2dedfac9da
+      formulas_version: metrics-formulas@metrics.v1+860cc6d13cb94420
   cdd:
     description: Coin Days Destroyed aggregated for spends on the metric date.
     dependencies:
@@ -218,8 +218,8 @@ metrics:
       no_lookahead: true
       reproducible: true
       utxo_snapshot_commit: utxo-spent@4a2988b16c12
-      price_root_commit: price-oracle@18b953253fdb
-      formulas_version: metrics-formulas@metrics.v1+7ca0189cc1328028
+      price_root_commit: price-oracle@8b2dedfac9da
+      formulas_version: metrics-formulas@metrics.v1+860cc6d13cb94420
   adjusted_cdd:
     description: Coin Days Destroyed normalized by spent volume for the metric date.
     dependencies:
@@ -235,8 +235,8 @@ metrics:
       no_lookahead: true
       reproducible: true
       utxo_snapshot_commit: utxo-spent@4a2988b16c12
-      price_root_commit: price-oracle@18b953253fdb
-      formulas_version: metrics-formulas@metrics.v1+7ca0189cc1328028
+      price_root_commit: price-oracle@8b2dedfac9da
+      formulas_version: metrics-formulas@metrics.v1+860cc6d13cb94420
   dormancy_flow:
     description: Dormancy flow calculated as market capitalization divided by rolling
       Coin Days Destroyed.
@@ -254,8 +254,8 @@ metrics:
       no_lookahead: true
       reproducible: true
       utxo_snapshot_commit: utxo-spent@4a2988b16c12
-      price_root_commit: price-oracle@18b953253fdb
-      formulas_version: metrics-formulas@metrics.v1+7ca0189cc1328028
+      price_root_commit: price-oracle@8b2dedfac9da
+      formulas_version: metrics-formulas@metrics.v1+860cc6d13cb94420
   utxo_profit_share:
     description: Share of outstanding supply currently in profit relative to cost
       basis.
@@ -273,8 +273,8 @@ metrics:
       no_lookahead: true
       reproducible: true
       utxo_snapshot_commit: utxo-snapshots@f7b2d9a9e05a
-      price_root_commit: price-oracle@18b953253fdb
-      formulas_version: metrics-formulas@metrics.v1+7ca0189cc1328028
+      price_root_commit: price-oracle@8b2dedfac9da
+      formulas_version: metrics-formulas@metrics.v1+860cc6d13cb94420
   drawdown_pct:
     description: Percentage drawdown from trailing price maximum.
     dependencies:
@@ -290,8 +290,8 @@ metrics:
       no_lookahead: true
       reproducible: true
       utxo_snapshot_commit: utxo-snapshots@f7b2d9a9e05a
-      price_root_commit: price-oracle@18b953253fdb
-      formulas_version: metrics-formulas@metrics.v1+7ca0189cc1328028
+      price_root_commit: price-oracle@8b2dedfac9da
+      formulas_version: metrics-formulas@metrics.v1+860cc6d13cb94420
   supply_btc:
     description: Outstanding UTXO supply expressed in BTC units.
     dependencies:
@@ -307,8 +307,8 @@ metrics:
       no_lookahead: true
       reproducible: true
       utxo_snapshot_commit: utxo-snapshots@f7b2d9a9e05a
-      price_root_commit: price-oracle@18b953253fdb
-      formulas_version: metrics-formulas@metrics.v1+7ca0189cc1328028
+      price_root_commit: price-oracle@8b2dedfac9da
+      formulas_version: metrics-formulas@metrics.v1+860cc6d13cb94420
   supply_sats:
     description: Outstanding UTXO supply expressed in satoshis.
     dependencies:
@@ -324,8 +324,8 @@ metrics:
       no_lookahead: true
       reproducible: true
       utxo_snapshot_commit: utxo-snapshots@f7b2d9a9e05a
-      price_root_commit: price-oracle@18b953253fdb
-      formulas_version: metrics-formulas@metrics.v1+7ca0189cc1328028
+      price_root_commit: price-oracle@8b2dedfac9da
+      formulas_version: metrics-formulas@metrics.v1+860cc6d13cb94420
   supply_cost_basis_usd:
     description: Aggregate USD cost basis for the current UTXO set.
     dependencies:
@@ -341,5 +341,5 @@ metrics:
       no_lookahead: true
       reproducible: true
       utxo_snapshot_commit: utxo-snapshots@f7b2d9a9e05a
-      price_root_commit: price-oracle@18b953253fdb
-      formulas_version: metrics-formulas@metrics.v1+7ca0189cc1328028
+      price_root_commit: price-oracle@8b2dedfac9da
+      formulas_version: metrics-formulas@metrics.v1+860cc6d13cb94420

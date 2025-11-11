@@ -5,10 +5,9 @@ data/bitcoind/
 data/prices/
 data/raw/
 data/raw/**
-data/utxo/
-data/utxo/**
+data/metrics/
+data/metrics/**
 config/price_oracle.local.yaml
-config/utxo.local.yaml
 __pycache__/
 *.pyc
 poetry.lock

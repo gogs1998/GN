@@ -1,0 +1,35 @@
+{
+  "overall": {
+    "annual_return": 0.0,
+    "annual_vol": 0.0,
+    "avg_trade_return": NaN,
+    "exposure": 0.0,
+    "max_drawdown": 0.0,
+    "sharpe": NaN,
+    "total_return": 0.0,
+    "trades": 0.0,
+    "win_rate": 0.0
+  },
+  "test": {
+    "annual_return": 0.0,
+    "annual_vol": 0.0,
+    "avg_trade_return": NaN,
+    "exposure": 0.0,
+    "max_drawdown": 0.0,
+    "sharpe": NaN,
+    "total_return": 0.0,
+    "trades": 0.0,
+    "win_rate": 0.0
+  },
+  "val": {
+    "annual_return": 0.0,
+    "annual_vol": 0.0,
+    "avg_trade_return": NaN,
+    "exposure": 0.0,
+    "max_drawdown": 0.0,
+    "sharpe": NaN,
+    "total_return": 0.0,
+    "trades": 0.0,
+    "win_rate": 0.0
+  }
+}
