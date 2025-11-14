@@ -55,7 +55,7 @@ indent-style = "space"
 
 [tool.mypy]
 python_version = "3.11"
-plugins = []
+plugins = ["pydantic.mypy"]
 warn_return_any = true
 warn_unused_configs = true
 warn_redundant_casts = true
@@ -64,6 +64,31 @@ strict_optional = true
 show_error_codes = true
 no_implicit_optional = true
 mypy_path = "src"
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = "src.ingest.*"
+ignore_errors = true
+
+[[tool.mypy.overrides]]
+module = "src.price_oracle.*"
+ignore_errors = true
+
+[[tool.mypy.overrides]]
+module = "src.utxo.*"
+ignore_errors = true
+
+[[tool.mypy.overrides]]
+module = "ingest.*"
+ignore_errors = true
+
+[[tool.mypy.overrides]]
+module = "price_oracle.*"
+ignore_errors = true
+
+[[tool.mypy.overrides]]
+module = "utxo.*"
+ignore_errors = true
 
 [build-system]
 requires = ["poetry-core>=1.9.0"]

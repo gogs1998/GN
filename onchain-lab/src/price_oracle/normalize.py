@@ -1,10 +1,15 @@
 from __future__ import annotations
 
+import logging
 from dataclasses import dataclass, replace
 from datetime import datetime, timedelta, timezone
 from typing import Dict, Iterable, List, Sequence, Tuple
 
+from zoneinfo import ZoneInfo
+
 PIPELINE_VERSION = "price_oracle.v1"
+
+logger = logging.getLogger(__name__)
 
 
 @dataclass(frozen=True)
@@ -37,41 +42,70 @@ def _parse_boundary(boundary: str) -> Tuple[int, int]:
     return int(hour_str), int(minute_str)
 
 
-def align_timestamp(ts: datetime, freq: str, boundary: str | None) -> datetime:
+def align_timestamp(
+    ts: datetime,
+    freq: str,
+    boundary: str | None,
+    tzinfo: ZoneInfo | None,
+) -> datetime:
+    tz = tzinfo or timezone.utc
     if ts.tzinfo is None:
         ts = ts.replace(tzinfo=timezone.utc)
     else:
         ts = ts.astimezone(timezone.utc)
 
+    local = ts.astimezone(tz)
+
     if freq == "1h":
-        return ts.replace(minute=0, second=0, microsecond=0)
+        aligned_local = local.replace(minute=0, second=0, microsecond=0)
+        return aligned_local.astimezone(timezone.utc)
 
     if freq == "1d":
         hour = minute = 0
         if boundary:
             hour, minute = _parse_boundary(boundary)
-        aligned = ts.replace(hour=hour, minute=minute, second=0, microsecond=0)
-        if ts < aligned:
-            aligned -= timedelta(days=1)
-        return aligned
+        aligned_local = local.replace(hour=hour, minute=minute, second=0, microsecond=0)
+        if local < aligned_local:
+            aligned_local -= timedelta(days=1)
+        return aligned_local.astimezone(timezone.utc)
 
     raise ValueError(f"Unsupported frequency '{freq}' for alignment")
 
 
-def apply_alignment(records: Iterable[PriceRecord], freq: str, boundary: str | None) -> List[PriceRecord]:
+def apply_alignment(
+    records: Iterable[PriceRecord],
+    freq: str,
+    boundary: str | None,
+    *,
+    tzinfo: ZoneInfo | None,
+    tolerance_minutes: int = 2,
+) -> List[PriceRecord]:
     aligned: List[PriceRecord] = []
     boundary_pair: Tuple[int, int] | None = None
     if freq == "1d" and boundary:
         boundary_pair = _parse_boundary(boundary)
+    tolerance = timedelta(minutes=max(tolerance_minutes, 0))
     for rec in records:
-        target_ts = align_timestamp(rec.ts, freq, boundary)
+        target_ts = align_timestamp(rec.ts, freq, boundary, tzinfo)
         if boundary_pair is not None:
             hour, minute = boundary_pair
+            target_local = target_ts.astimezone(tzinfo or timezone.utc)
             rec_ts = rec.ts if rec.ts.tzinfo else rec.ts.replace(tzinfo=timezone.utc)
-            rec_ts = rec_ts.astimezone(timezone.utc)
-            if (rec_ts.hour, rec_ts.minute) != (hour, minute):
+            rec_local = rec_ts.astimezone(tzinfo or timezone.utc)
+            diff = abs(target_local - rec_local)
+            if diff > tolerance:
                 raise ValueError(
-                    f"Record at {rec.ts.isoformat()} does not match daily boundary {boundary}."
+                    f"Record at {rec.ts.isoformat()} deviates {diff} from daily boundary {boundary}."
+                )
+            if diff > timedelta(0):
+                logger.warning(
+                    "Snapping %s %s record at %s to boundary %02d:%02d (offset %s)",
+                    rec.symbol,
+                    rec.freq,
+                    rec.ts.isoformat(),
+                    hour,
+                    minute,
+                    diff,
                 )
         aligned.append(rec.aligned(target_ts))
     return aligned

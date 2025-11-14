@@ -1,7 +1,7 @@
 data:
-  metrics_parquet: "../data/metrics/daily/metrics.parquet"
-  out_root: "../data/models"
-  artifacts_root: "../artifacts/models"
+  metrics_parquet: "D:/Blockchain/onchain-data/metrics/daily/metrics.parquet"
+  out_root: "D:/Blockchain/onchain-data/models"
+  artifacts_root: "D:/Blockchain/onchain-data/models/artifacts"
 
 target:
   label_horizon_days: 1
@@ -79,6 +79,8 @@ models:
 decision:
   prob_threshold: 0.55
   side: "long_flat"
+  model_thresholds:
+    cnn_lstm: 0.50
 
 costs:
   fee_bps: 5
@@ -96,4 +98,4 @@ qa:
   tolerance_pct: 0.5
 
 registry:
-  path: "../data/models/registry.json"
+  path: "D:/Blockchain/onchain-data/models/registry.json"

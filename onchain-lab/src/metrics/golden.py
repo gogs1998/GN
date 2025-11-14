@@ -7,6 +7,7 @@ from typing import Iterable, Mapping, Sequence
 
 import matplotlib
 import matplotlib.pyplot as plt
+import matplotlib.dates as mdates
 import pandas as pd
 import pyarrow.parquet as pq
 
@@ -58,19 +59,26 @@ def _render_chart(
     if subset.empty:
         return
 
+    dates_numeric = [mdates.date2num(d) for d in subset["date"]]
+    values = subset[metric].astype(float).to_numpy()
+    target_num = mdates.date2num(target_date)
+
     fig, ax = plt.subplots(figsize=(8, 4.5))
-    ax.plot(subset["date"], subset[metric], label=metric, linewidth=2)
-    ax.axvline(target_date, color="tab:red", linestyle="--", label="Golden day")
+    ax.plot(dates_numeric, values, label=metric, linewidth=2)
+    ax.axvline(target_num, color="tab:red", linestyle="--", label="Golden day")
     if metric in subset.columns:
         golden_point = subset[subset["date"] == target_date]
         if not golden_point.empty:
-            ax.scatter([target_date], golden_point[metric], color="black", zorder=5)
-    ax.scatter([target_date], [expected_value], color="gold", edgecolor="black", zorder=6)
+            actual_value = float(golden_point[metric].astype(float).iloc[0])
+            ax.scatter([target_num], [actual_value], color="black", zorder=5)
+    ax.scatter([target_num], [expected_value], color="gold", edgecolor="black", zorder=6)
     ax.set_title(f"{metric} around {target_date.isoformat()}")
     ax.set_ylabel(metric)
     ax.set_xlabel("date")
     ax.legend()
     ax.grid(True, linestyle="--", alpha=0.4)
+    ax.xaxis_date()
+    ax.xaxis.set_major_formatter(mdates.DateFormatter("%Y-%m-%d"))
     fig.autofmt_xdate()
     output_path.parent.mkdir(parents=True, exist_ok=True)
     fig.savefig(output_path, dpi=150, bbox_inches="tight")

@@ -2,13 +2,18 @@ from __future__ import annotations
 
 import json
 from dataclasses import dataclass
-from typing import Dict, List, Optional, Sequence, Tuple
+from typing import TYPE_CHECKING, Any, Dict, List, Optional, Sequence, Tuple, cast
 
 import numpy as np
 import pandas as pd
 from joblib import dump, load
 from sklearn.preprocessing import StandardScaler
 import sklearn
+
+if TYPE_CHECKING:
+    from numpy.typing import NDArray
+else:  # pragma: no cover - typing fallback
+    NDArray = np.ndarray  # type: ignore[attr-defined]
 
 from .config import ModelConfig
 from .utils import (
@@ -40,28 +45,32 @@ class FrameArtifactError(RuntimeError):
 class FrameBundle:
     tabular: pd.DataFrame
     feature_columns: List[str]
-    sequence_tensor: np.ndarray
+    sequence_tensor: NDArray[Any]
     sequence_features: List[str]
     lookback: int
     scaler: StandardScaler
     clip_bounds: Dict[str, Tuple[float, float]]
 
-    def features(self, split: str, columns: Optional[Sequence[str]] = None) -> Tuple[np.ndarray, np.ndarray]:
+    def features(
+        self, split: str, columns: Optional[Sequence[str]] = None
+    ) -> Tuple[NDArray[Any], NDArray[Any]]:
         feats = list(columns) if columns is not None else self.feature_columns
         mask = self.tabular[SPLIT_COLUMN] == split
-        x = self.tabular.loc[mask, feats].to_numpy(dtype=float)
-        y = self.tabular.loc[mask, LABEL_COLUMN].to_numpy(dtype=float)
+        x = cast(NDArray[Any], self.tabular.loc[mask, feats].to_numpy(dtype=float))
+        y = cast(NDArray[Any], self.tabular.loc[mask, LABEL_COLUMN].to_numpy(dtype=float))
         return x, y
 
-    def sequences(self, split: str, columns: Optional[Sequence[str]] = None) -> np.ndarray:
+    def sequences(self, split: str, columns: Optional[Sequence[str]] = None) -> NDArray[Any]:
         feats = list(columns) if columns is not None else self.sequence_features
         indices = [self.sequence_features.index(name) for name in feats]
         mask = self.tabular[SPLIT_COLUMN].to_numpy() == split
-        return self.sequence_tensor[mask][:, :, indices]
+        return cast(NDArray[Any], self.sequence_tensor[mask][:, :, indices])
 
-    def forward_returns(self, split: str) -> np.ndarray:
+    def forward_returns(self, split: str) -> NDArray[Any]:
         mask = self.tabular[SPLIT_COLUMN] == split
-        return self.tabular.loc[mask, FORWARD_RETURN_COLUMN].to_numpy(dtype=float)
+        return cast(
+            NDArray[Any], self.tabular.loc[mask, FORWARD_RETURN_COLUMN].to_numpy(dtype=float)
+        )
 
     def dates(self, split: Optional[str] = None) -> pd.Series:
         if split is None:
@@ -293,10 +302,10 @@ class FrameBuilder:
         self,
         df: pd.DataFrame,
         base_features: Sequence[str],
-    ) -> Tuple[np.ndarray, List[int]]:
+    ) -> Tuple[NDArray[Any], List[int]]:
         lookback = self.config.target.lookback_days
         indices: List[int] = []
-        windows: List[np.ndarray] = []
+        windows: List[NDArray[Any]] = []
         sequence_features = [name for name in base_features if name in df.columns]
         values = df[sequence_features].to_numpy(dtype=float)
         labels = df[LABEL_COLUMN].to_numpy()

@@ -1,14 +1,16 @@
 data:
   ingest:
-    blocks: "data/parquet/blocks/**/*.parquet"
-    transactions: "data/parquet/tx/**/*.parquet"
-    txin: "data/parquet/txin/**/*.parquet"
-    txout: "data/parquet/txout/**/*.parquet"
+    blocks: "D:/Blockchain/onchain-data/parquet/blocks/**/*.parquet"
+    transactions: "D:/Blockchain/onchain-data/parquet/tx/**/*.parquet"
+    txin: "D:/Blockchain/onchain-data/parquet/txin/**/*.parquet"
+    txout: "D:/Blockchain/onchain-data/parquet/txout/**/*.parquet"
   price:
-    parquet: "data/prices/**/*.parquet"
+    parquet: "D:/Blockchain/onchain-data/prices/**/*.parquet"
     symbol: "BTCUSDT"
     freq: "1d"
-  lifecycle_root: "data/utxo"
+  entities:
+    lookup: "data/utxo/entities/entities.parquet"
+  lifecycle_root: "D:/Blockchain/onchain-data/utxo"
 snapshot:
   timezone: "UTC"
   daily_close_hhmm: "00:00"

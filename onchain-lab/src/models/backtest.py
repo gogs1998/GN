@@ -36,9 +36,10 @@ def run_backtest(model_name: str, predictions: pd.DataFrame, config: ModelConfig
     data = predictions.copy()
     data[DATE_COLUMN] = pd.to_datetime(data[DATE_COLUMN])
     data = data.sort_values(DATE_COLUMN).reset_index(drop=True)
+    threshold = config.decision.threshold_for(model_name)
     data["signal"] = pd.Series(
         compute_trade_signal(
-            data["prob_up"], threshold=config.decision.prob_threshold, side=config.decision.side
+            data["prob_up"], threshold=threshold, side=config.decision.side
         ),
         index=data.index,
     )
@@ -146,6 +147,15 @@ def _run_quality_checks(df: pd.DataFrame, config: ModelConfig) -> None:
                 raise ValueError(
                     f"out-of-sample period starts at {min_oos} before required minimum {required}"
                 )
+    oos_df = df.loc[df[SPLIT_COLUMN] != "train"]
+    if not oos_df.empty:
+        position = oos_df["position"].to_numpy(dtype=float)
+        trades = float(np.sum(np.abs(np.diff(position)) > 1e-8))
+        exposure = float(np.mean(np.abs(position)))
+        if qa.require_positive_trades and trades <= 0:
+            raise ValueError("QA check failed: zero trades observed in out-of-sample backtest")
+        if qa.require_positive_exposure and exposure <= 0:
+            raise ValueError("QA check failed: zero exposure observed in out-of-sample backtest")
 
 
 __all__ = [

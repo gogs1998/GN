@@ -5,11 +5,31 @@ from datetime import datetime, timezone
 from typing import Any, Dict, Optional
 
 import httpx
-from tenacity import RetryError, retry, retry_if_exception_type, stop_after_attempt, wait_exponential
+from tenacity import RetryError, retry, retry_if_exception, stop_after_attempt, wait_exponential
 
 
 class RPCError(RuntimeError):
     """Raised when an RPC request fails."""
+
+
+class RPCResponseError(RPCError):
+    def __init__(self, method: str, code: int | None, message: str | None) -> None:
+        self.method = method
+        self.code = code
+        self.message = message or ""
+        detail = f"RPC error calling {method}: code={code} message={self.message}"
+        super().__init__(detail)
+
+
+_RETRYABLE_RPC_CODES = {-28, -10, -8}
+
+
+def _is_retryable(exc: BaseException) -> bool:
+    if isinstance(exc, httpx.HTTPError):
+        return True
+    if isinstance(exc, RPCResponseError) and exc.code in _RETRYABLE_RPC_CODES:
+        return True
+    return False
 
 
 class BitcoinRPCClient:
@@ -75,7 +95,7 @@ class BitcoinRPCClient:
         @retry(
             stop=stop_after_attempt(self._max_attempts),
             wait=wait_exponential(multiplier=0.5, min=1, max=10),
-            retry=retry_if_exception_type(httpx.HTTPError),
+            retry=retry_if_exception(_is_retryable),
             reraise=True,
         )
         def _do_call() -> Any:
@@ -83,7 +103,12 @@ class BitcoinRPCClient:
             response.raise_for_status()
             data = response.json()
             if "error" in data and data["error"]:
-                raise RPCError(f"RPC error calling {method}: {json.dumps(data['error'])}")
+                err_obj = data["error"] or {}
+                raise RPCResponseError(
+                    method,
+                    err_obj.get("code"),
+                    err_obj.get("message"),
+                )
             return data["result"]
 
         try:

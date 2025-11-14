@@ -1,4 +1,4 @@
-data_root: "data/parquet"
+data_root: "D:/Blockchain/onchain-data/parquet"
 partitions:
   blocks: "blocks/height={height_bucket}/"
   transactions: "tx/height={height_bucket}/"
@@ -9,9 +9,10 @@ compression: "zstd"
 zstd_level: 6
 rpc:
   host: "localhost"
-  port: 18443
+  port: 8332
   user_env: "BTC_RPC_USER"
   pass_env: "BTC_RPC_PASS"
+  timeout_seconds: 120.0
 limits:
   max_blocks_per_run: 5000
   io_batch_size: 200

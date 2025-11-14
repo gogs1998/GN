@@ -40,6 +40,10 @@ class SnapshotBuilder:
         created_df["addresses"] = created_df["addresses"].apply(_normalize_addresses)
         created_df["created_time"] = pd.to_datetime(created_df["created_time"], utc=True)
         created_df["created_date"] = pd.to_datetime(created_df["created_date"], utc=True).dt.date
+        if "entity_id" not in created_df.columns:
+            created_df["entity_id"] = pd.NA
+        if "entity_type" not in created_df.columns:
+            created_df["entity_type"] = pd.NA
 
         if "spend_time_hint" in created_df.columns:
             created_df["spend_time_hint"] = pd.to_datetime(
@@ -159,13 +163,14 @@ class SnapshotBuilder:
             price_ts = price_info.get("ts")
 
         records: list[dict] = []
-        grouped: Dict[tuple[str, str], dict] = defaultdict(lambda: {
+        grouped: Dict[tuple[str | None, str | None, str, str], dict] = defaultdict(lambda: {
             "output_count": 0,
             "balance_sats": 0,
             "balance_btc": 0.0,
             "age_days_total": 0.0,
             "cost_basis_usd": 0.0,
         })
+        entity_totals: Dict[tuple[str | None, str | None], int] = defaultdict(int)
 
         def bucket(age: float) -> str:
             if age < 1:
@@ -184,7 +189,15 @@ class SnapshotBuilder:
             addresses = _normalize_addresses(row.get("addresses"))
             group_key = _derive_group_key(addresses, row["script_type"])
             age_bucket = bucket(row["age_days"])
-            key = (group_key, age_bucket)
+            entity_id = row.get("entity_id")
+            if pd.isna(entity_id):
+                entity_id = None
+            entity_type = row.get("entity_type")
+            if pd.isna(entity_type):
+                entity_type = None
+            elif isinstance(entity_type, str):
+                entity_type = entity_type.strip().lower() or None
+            key = (entity_id, entity_type, group_key, age_bucket)
             entry = grouped[key]
             entry["output_count"] += 1
             value_sats = int(row["value_sats"])
@@ -194,13 +207,18 @@ class SnapshotBuilder:
             price_close_creation = row.get("creation_price_close")
             if pd.notna(price_close_creation):
                 entry["cost_basis_usd"] += (value_sats / 1e8) * float(price_close_creation)
+            if entity_id is not None:
+                entity_totals[(entity_id, entity_type)] += value_sats
 
-        for (group_key, age_bucket), entry in grouped.items():
+        for (entity_id, entity_type, group_key, age_bucket), entry in grouped.items():
             output_count = entry["output_count"]
             avg_age = entry["age_days_total"] / output_count if output_count else 0.0
             market_value = (
                 entry["balance_btc"] * price_close if price_close is not None else None
             )
+            cluster_balance = None
+            if entity_id is not None:
+                cluster_balance = int(entity_totals.get((entity_id, entity_type), 0))
             records.append(
                 {
                     "snapshot_date": snapshot_date,
@@ -214,6 +232,9 @@ class SnapshotBuilder:
                     "market_value_usd": market_value,
                     "price_close": price_close,
                     "price_ts": price_ts,
+                    "entity_id": entity_id,
+                    "entity_type": entity_type,
+                    "cluster_balance_sats": cluster_balance,
                     "pipeline_version": pipeline_version(),
                     "lineage_id": f"{snapshot_date.isoformat()}::{group_key}::{age_bucket}",
                 }

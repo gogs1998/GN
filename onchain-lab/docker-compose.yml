@@ -4,20 +4,24 @@ services:
     container_name: onchain-bitcoind
     restart: unless-stopped
     command:
-      - -regtest=1                 # or remove for mainnet
       - -server=1
       - -txindex=1
       - -rpcbind=0.0.0.0
       - -rpcallowip=0.0.0.0/0
+      - -rpcport=8332
+      - -listen=1
+      - -port=8333
       - -rpcuser=${BTC_RPC_USER}
       - -rpcpassword=${BTC_RPC_PASS}
       - -fallbackfee=0.0002
       - -printtoconsole
     ports:
-      - "18443:18443"              # regtest RPC; use 8332:8332 for mainnet
+      - "8332:8332"              # mainnet RPC
+      - "8333:8333"              # mainnet P2P
     volumes:
-      - bitcoin_data:/home/bitcoin/.bitcoin  # named volume (no Windows bind)
+      - type: bind
+        source: D:/Blockchain/bitcoind
+        target: /home/bitcoin/.bitcoin
 
-volumes:
-  bitcoin_data:
+volumes: {}
 

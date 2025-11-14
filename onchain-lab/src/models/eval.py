@@ -12,6 +12,7 @@ from sklearn.metrics import (
     accuracy_score,
     average_precision_score,
     brier_score_loss,
+    confusion_matrix,
     f1_score,
     precision_recall_curve,
     precision_score,
@@ -30,6 +31,22 @@ def compute_split_metrics(predictions: pd.DataFrame, threshold: float) -> Dict[s
         split_df = predictions[predictions[SPLIT_COLUMN] == split]
         metrics[split] = _compute_metrics_for_split(split_df, threshold)
     return metrics
+
+
+def compute_confusion_matrices(
+    predictions: pd.DataFrame, threshold: float
+) -> Dict[str, Dict[str, int]]:
+    matrices: Dict[str, Dict[str, int]] = {}
+    for split in sorted(predictions[SPLIT_COLUMN].unique()):
+        split_df = predictions[predictions[SPLIT_COLUMN] == split]
+        if split_df.empty:
+            continue
+        matrices[split] = _confusion_counts(split_df, threshold)
+    oos_mask = predictions[SPLIT_COLUMN] != "train"
+    oos_df = predictions.loc[oos_mask]
+    if not oos_df.empty:
+        matrices["oos"] = _confusion_counts(oos_df, threshold)
+    return matrices
 
 
 def _compute_metrics_for_split(predictions: pd.DataFrame, threshold: float) -> Dict[str, float]:
@@ -57,19 +74,30 @@ def _compute_metrics_for_split(predictions: pd.DataFrame, threshold: float) -> D
     return results
 
 
+def _confusion_counts(predictions: pd.DataFrame, threshold: float) -> Dict[str, int]:
+    y_true = predictions[LABEL_COLUMN].to_numpy(dtype=int)
+    pred = (predictions["prob_up"].to_numpy(dtype=float) >= threshold).astype(int)
+    cm = confusion_matrix(y_true, pred, labels=[0, 1])
+    tn, fp, fn, tp = cm.ravel() if cm.size == 4 else (0, 0, 0, 0)
+    return {"tn": int(tn), "fp": int(fp), "fn": int(fn), "tp": int(tp)}
+
+
 def _expected_calibration_error(y_true: np.ndarray, prob: np.ndarray, *, bins: int = 10) -> float:
     if len(y_true) == 0:
         return float("nan")
     bin_edges = np.linspace(0.0, 1.0, bins + 1)
     ece = 0.0
     for i in range(bins):
-        mask = (prob >= bin_edges[i]) & (prob < bin_edges[i + 1])
+        lower = bin_edges[i]
+        upper = bin_edges[i + 1]
+        mask = (prob >= lower) & ((prob < upper) if i < bins - 1 else (prob <= upper))
         if not np.any(mask):
             continue
         bin_prob = prob[mask]
         bin_true = y_true[mask]
-        ece += (np.mean(bin_prob) - np.mean(bin_true)) ** 2 * (len(bin_true) / len(prob))
-    return float(np.sqrt(ece))
+        gap = abs(np.mean(bin_prob) - np.mean(bin_true))
+        ece += gap * (len(bin_true) / len(prob))
+    return float(ece)
 
 
 def generate_plots(predictions: pd.DataFrame, out_dir: Path, model_name: str) -> None:
@@ -129,4 +157,9 @@ def save_metrics(metrics: Dict[str, Dict[str, float]], path: Path) -> None:
     save_json(path, metrics)
 
 
-__all__ = ["compute_split_metrics", "generate_plots", "save_metrics"]
+__all__ = [
+    "compute_confusion_matrices",
+    "compute_split_metrics",
+    "generate_plots",
+    "save_metrics",
+]

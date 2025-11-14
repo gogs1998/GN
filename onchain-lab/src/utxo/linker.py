@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import hashlib
 from dataclasses import dataclass
-from typing import Tuple
+from typing import Optional, Tuple
 
 import pandas as pd
 
@@ -19,7 +19,7 @@ def _ensure_list(value: object) -> list[str]:
     return [str(value)]
 
 
-def _lineage(*parts: str) -> str:
+def compute_lineage_id(*parts: str) -> str:
     digest = hashlib.sha256()
     for part in parts:
         digest.update(part.encode("utf-8"))
@@ -32,6 +32,7 @@ class SourceFrames:
     txin: pd.DataFrame
     transactions: pd.DataFrame
     prices: pd.DataFrame
+    entity_lookup: Optional[pd.DataFrame] = None
 
 
 @dataclass
@@ -85,6 +86,7 @@ def build_lifecycle_frames(frames: SourceFrames) -> LifecycleFrames:
         inplace=True,
     )
     created.drop(columns=["price_date"], inplace=True)
+    created = attach_entity_metadata(created, frames.entity_lookup)
 
     spends = frames.txin.copy()
     spends = spends[~spends["coinbase"]].copy()
@@ -139,7 +141,7 @@ def build_lifecycle_frames(frames: SourceFrames) -> LifecycleFrames:
     created["is_spent"] = created["is_spent"].astype(bool)
 
     created["lineage_id"] = created.apply(
-        lambda row: _lineage(row["txid"], str(row["vout"])), axis=1
+        lambda row: compute_lineage_id(row["txid"], str(row["vout"])), axis=1
     )
     created["pipeline_version"] = pipeline_version()
 
@@ -154,6 +156,8 @@ def build_lifecycle_frames(frames: SourceFrames) -> LifecycleFrames:
                 "creation_price_close",
                 "creation_price_ts",
                 "creation_price_source",
+                "entity_id",
+                "entity_type",
             ]
         ],
         left_on=["source_txid", "source_vout"],
@@ -185,7 +189,9 @@ def build_lifecycle_frames(frames: SourceFrames) -> LifecycleFrames:
         spend_join["lineage_id"] = pd.Series(dtype="object", index=spend_join.index)
     else:
         spend_join["lineage_id"] = spend_join.apply(
-            lambda row: _lineage(row["source_txid"], str(row["source_vout"]), row["spend_txid"]),
+            lambda row: compute_lineage_id(
+                row["source_txid"], str(row["source_vout"]), row["spend_txid"]
+            ),
             axis=1,
         )
     spend_join["pipeline_version"] = pipeline_version()
@@ -210,6 +216,8 @@ def build_lifecycle_frames(frames: SourceFrames) -> LifecycleFrames:
         "realized_value_usd",
         "realized_profit_usd",
         "is_orphan",
+        "entity_id",
+        "entity_type",
         "lineage_id",
         "pipeline_version",
     ]
@@ -235,6 +243,8 @@ def build_lifecycle_frames(frames: SourceFrames) -> LifecycleFrames:
         "spend_height_hint",
         "spend_time_hint",
         "is_spent",
+        "entity_id",
+        "entity_type",
         "lineage_id",
         "pipeline_version",
     ]
@@ -244,4 +254,49 @@ def build_lifecycle_frames(frames: SourceFrames) -> LifecycleFrames:
     return LifecycleFrames(created=created, spent=spent)
 
 
-__all__ = ["SourceFrames", "LifecycleFrames", "build_lifecycle_frames"]
+def attach_entity_metadata(
+    created: pd.DataFrame, entity_lookup: Optional[pd.DataFrame]
+) -> pd.DataFrame:
+    result = created.copy()
+    result["entity_id"] = pd.NA
+    result["entity_type"] = pd.NA
+    if entity_lookup is None or entity_lookup.empty:
+        return result
+
+    lookup = entity_lookup.copy()
+    lookup["address"] = lookup["address"].astype(str).str.strip()
+    lookup = lookup[lookup["address"] != ""]
+    if lookup.empty:
+        return result
+
+    lookup["_addr_key"] = lookup["address"].str.lower()
+    lookup = lookup.drop_duplicates("_addr_key", keep="last")
+    id_map = lookup.set_index("_addr_key")["entity_id"].to_dict()
+    type_map = lookup.set_index("_addr_key")["entity_type"].astype(str).str.lower().to_dict()
+
+    def resolve(addresses: list[str]) -> tuple[Optional[str], Optional[str]]:
+        for raw in addresses:
+            if raw is None:
+                continue
+            key = str(raw).strip().lower()
+            if not key:
+                continue
+            entity_id = id_map.get(key)
+            entity_type = type_map.get(key)
+            if entity_id is not None or entity_type is not None:
+                return entity_id, entity_type
+        return None, None
+
+    resolved = result["addresses"].apply(resolve)
+    result["entity_id"] = resolved.apply(lambda x: x[0])
+    result["entity_type"] = resolved.apply(lambda x: x[1])
+    return result
+
+
+__all__ = [
+    "SourceFrames",
+    "LifecycleFrames",
+    "attach_entity_metadata",
+    "build_lifecycle_frames",
+    "compute_lineage_id",
+]

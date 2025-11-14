@@ -4,7 +4,7 @@ from dataclasses import dataclass
 import inspect
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Dict, List, Optional, Sequence, Tuple
+from typing import TYPE_CHECKING, Any, Dict, List, Optional, Sequence, Tuple, cast
 
 import joblib
 import numpy as np
@@ -14,6 +14,11 @@ from sklearn.linear_model import LogisticRegression
 from torch import Tensor, nn
 from torch.utils.data import DataLoader, TensorDataset
 from xgboost import XGBClassifier, callback
+
+if TYPE_CHECKING:
+    from numpy.typing import NDArray
+else:  # pragma: no cover - typing fallback
+    NDArray = np.ndarray  # type: ignore[attr-defined]
 
 from .config import CNNLSTMConfig, ModelConfig
 from .frame import (
@@ -127,12 +132,15 @@ def _train_logistic(
     model_path = artifacts_dir / MODEL_FILENAME["logreg"]
     joblib.dump(model, model_path)
     feature_hash_value = feature_hash(features)
+    threshold = config.decision.threshold_for("logreg")
     (
         predictions,
         predictions_path,
         signals_path,
         baseline_signals_path,
-    ) = _persist_predictions("logreg", config, feature_hash_value, predictions, data_dir)
+    ) = _persist_predictions(
+        "logreg", config, feature_hash_value, predictions, data_dir, threshold=threshold
+    )
     return ModelRunResult(
         model="logreg",
         features=list(features),
@@ -199,12 +207,15 @@ def _train_xgboost(
     model_path = artifacts_dir / MODEL_FILENAME["xgboost"]
     joblib.dump(model, model_path)
     feature_hash_value = feature_hash(features)
+    threshold = config.decision.threshold_for("xgboost")
     (
         predictions,
         predictions_path,
         signals_path,
         baseline_signals_path,
-    ) = _persist_predictions("xgboost", config, feature_hash_value, predictions, data_dir)
+    ) = _persist_predictions(
+        "xgboost", config, feature_hash_value, predictions, data_dir, threshold=threshold
+    )
     return ModelRunResult(
         model="xgboost",
         features=list(features),
@@ -281,12 +292,15 @@ def _train_cnn_lstm(
     ensure_directory(model_path.parent)
     torch.save(model.state_dict(), model_path)
     feature_hash_value = feature_hash(seq_features)
+    threshold = config.decision.threshold_for("cnn_lstm")
     (
         predictions,
         predictions_path,
         signals_path,
         baseline_signals_path,
-    ) = _persist_predictions("cnn_lstm", config, feature_hash_value, predictions, data_dir)
+    ) = _persist_predictions(
+        "cnn_lstm", config, feature_hash_value, predictions, data_dir, threshold=threshold
+    )
     return ModelRunResult(
         model="cnn_lstm",
         features=list(seq_features),
@@ -299,8 +313,10 @@ def _train_cnn_lstm(
     )
 
 
-def _predict_probabilities(model: object, frame: FrameBundle, features: Sequence[str]) -> np.ndarray:
-    x_full = frame.tabular[features].to_numpy(dtype=float)
+def _predict_probabilities(
+    model: object, frame: FrameBundle, features: Sequence[str]
+) -> NDArray[Any]:
+    x_full = cast(NDArray[Any], frame.tabular[features].to_numpy(dtype=float))
     if hasattr(model, "predict_proba"):
         probs = model.predict_proba(x_full)[:, 1]
     elif hasattr(model, "predict"):
@@ -308,7 +324,7 @@ def _predict_probabilities(model: object, frame: FrameBundle, features: Sequence
         probs = np.clip(preds, 1e-6, 1 - 1e-6)
     else:
         raise ValueError("model does not support probability predictions")
-    return probs.astype(float)
+    return cast(NDArray[Any], probs.astype(float))
 
 
 def _predict_sequence_model(
@@ -316,17 +332,17 @@ def _predict_sequence_model(
     inputs: Tensor,
     device: torch.device,
     batch_size: int,
-) -> np.ndarray:
+) -> NDArray[Any]:
     data = TensorDataset(inputs)
     loader = DataLoader(data, batch_size=batch_size, shuffle=False)
-    preds: List[np.ndarray] = []
+    preds: List[NDArray[Any]] = []
     model.eval()
     with torch.no_grad():
         for (batch_x,) in loader:
             batch_x = batch_x.to(device)
-            batch_probs = model(batch_x).detach().cpu().numpy()
+            batch_probs = cast(NDArray[Any], model(batch_x).detach().cpu().numpy())
             preds.append(batch_probs)
-    return np.concatenate(preds, axis=0)
+    return cast(NDArray[Any], np.concatenate(preds, axis=0))
 
 
 def _build_predictions_dataframe(frame: FrameBundle, probs: np.ndarray) -> pd.DataFrame:
@@ -342,11 +358,13 @@ def _persist_predictions(
     feature_hash_value: str,
     predictions: pd.DataFrame,
     data_dir: Path,
+    *,
+    threshold: float,
 ) -> Tuple[pd.DataFrame, Path, Path, Path]:
     updated = predictions.copy()
     decisions = compute_trade_signal(
         updated["prob_up"],
-        threshold=config.decision.prob_threshold,
+        threshold=threshold,
         side=config.decision.side,
     )
     updated["decision"] = decisions
@@ -357,7 +375,7 @@ def _persist_predictions(
         updated,
         model_name=model_name,
         feature_hash_value=feature_hash_value,
-        threshold=config.decision.prob_threshold,
+        threshold=threshold,
     )
     signals_path = data_dir / SIGNALS_FILE
     signals.to_parquet(signals_path, index=False)
@@ -434,7 +452,7 @@ def _persist_run_metadata(
         "config": {
             "lookback_days": config.target.lookback_days,
             "label_horizon_days": config.target.label_horizon_days,
-            "decision_threshold": config.decision.prob_threshold,
+            "decision_threshold": config.decision.threshold_for(run.model),
             "decision_side": config.decision.side,
         },
     }
@@ -460,7 +478,7 @@ def _build_cnn_lstm(sequence_features: Sequence[str], config: CNNLSTMConfig) -> 
             self.dropout = nn.Dropout(config.dropout)
             self.fc = nn.Linear(config.lstm_units, 1)
 
-        def forward(self, x: Tensor) -> Tensor:  # type: ignore[override]
+        def forward(self, x: Tensor) -> Tensor:
             x = x.transpose(1, 2)
             x = torch.relu(self.conv(x))
             x = x.transpose(1, 2)

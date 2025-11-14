@@ -126,5 +126,119 @@ def info(config_path: Optional[Path] = typer.Option(None, "--config", path_type=
     console.print(table)
 
 
+@app.command()
+def progress(config_path: Optional[Path] = typer.Option(None, "--config", path_type=Path)) -> None:
+    """Display blockchain ingestion progress."""
+    from datetime import datetime
+    from .pipeline import ProcessedHeightIndex
+    
+    cfg = _config(config_path)
+    
+    # Get processed height
+    idx = ProcessedHeightIndex(cfg.data_root)
+    max_height = idx.max_height()
+    
+    # Get blockchain tip
+    try:
+        with _client(cfg) as client:
+            tip = client.get_block_count()
+    except RPCError as exc:
+        console.print(f"[red]Failed to get blockchain tip:[/red] {exc}")
+        raise typer.Exit(code=2) from exc
+    
+    # Count marker files
+    marker_dir = cfg.data_root / "_markers"
+    if marker_dir.exists():
+        markers = sorted([
+            int(f.stem) for f in marker_dir.glob("*.done")
+            if f.stem.isdigit()
+        ])
+        processed_count = len(markers)
+        if markers:
+            min_height = min(markers)
+            max_marker = max(markers)
+        else:
+            min_height = -1
+            max_marker = -1
+    else:
+        processed_count = 0
+        min_height = -1
+        max_marker = -1
+        markers = []
+    
+    # Check for gaps
+    gaps = []
+    if markers:
+        prev = markers[0] - 1
+        for h in markers:
+            if h - prev > 1:
+                gaps.append((prev + 1, h - 1))
+            prev = h
+    
+    # Count data files
+    blocks_dir = cfg.data_root / "blocks"
+    tx_dir = cfg.data_root / "tx"
+    txin_dir = cfg.data_root / "txin"
+    txout_dir = cfg.data_root / "txout"
+    
+    block_files = len(list(blocks_dir.glob("**/*.parquet"))) if blocks_dir.exists() else 0
+    tx_files = len(list(tx_dir.glob("**/*.parquet"))) if tx_dir.exists() else 0
+    txin_files = len(list(txin_dir.glob("**/*.parquet"))) if txin_dir.exists() else 0
+    txout_files = len(list(txout_dir.glob("**/*.parquet"))) if txout_dir.exists() else 0
+    
+    # Calculate progress
+    total_blocks = tip + 1
+    processed_blocks = processed_count
+    remaining_blocks = total_blocks - processed_blocks
+    progress_pct = (processed_blocks / total_blocks * 100) if total_blocks > 0 else 0
+    
+    # Create progress table
+    table = Table(title="Blockchain Ingestion Progress", show_header=True, header_style="bold")
+    table.add_column("Metric", style="cyan")
+    table.add_column("Value", style="green")
+    
+    table.add_row("Current Blockchain Tip", f"{tip:,} blocks")
+    table.add_row("Total Blocks", f"{total_blocks:,} blocks (height 0-{tip})")
+    table.add_row("", "")
+    table.add_row("Processed Blocks", f"{processed_blocks:,} blocks")
+    table.add_row("Height Range", f"{min_height} - {max_marker}")
+    table.add_row("Remaining Blocks", f"{remaining_blocks:,} blocks")
+    table.add_row("Progress", f"{progress_pct:.4f}%")
+    
+    if gaps:
+        table.add_row("", "")
+        table.add_row("[yellow]⚠️  Gaps Detected[/yellow]", f"{len(gaps)} gaps found")
+        if len(gaps) <= 5:
+            table.add_row("Gap Ranges", ", ".join(f"{start}-{end}" for start, end in gaps))
+        else:
+            table.add_row("First 5 Gaps", ", ".join(f"{start}-{end}" for start, end in gaps[:5]))
+    else:
+        table.add_row("", "")
+        table.add_row("[green]✅ Status[/green]", "No gaps detected (continuous range)")
+    
+    table.add_row("", "")
+    table.add_row("Data Files", "")
+    table.add_row("  Block files", f"{block_files:,}")
+    table.add_row("  Transaction files", f"{tx_files:,}")
+    table.add_row("  TxIn files", f"{txin_files:,}")
+    table.add_row("  TxOut files", f"{txout_files:,}")
+    
+    console.print(table)
+    
+    # Estimate time (rough)
+    blocks_per_second = 1.0  # Very rough estimate
+    estimated_seconds = remaining_blocks / blocks_per_second if blocks_per_second > 0 else 0
+    estimated_hours = estimated_seconds / 3600
+    estimated_days = estimated_hours / 24
+    
+    console.print(f"\n[dim]Estimated time remaining (at ~1 block/sec): {estimated_days:.1f} days ({estimated_hours:.1f} hours)[/dim]")
+    console.print(f"[dim]Note: Actual time varies based on block sizes and RPC performance[/dim]")
+    
+    if progress_pct < 1:
+        console.print(f"\n[yellow]⚠️  Very early stage ({progress_pct:.4f}% complete)[/yellow]")
+        console.print(f"[dim]Consider running: onchain ingest backfill --from 0 --to 5000[/dim]")
+        console.print(f"[dim]Or: onchain ingest catchup --max-blocks 5000[/dim]")
+
+
 if __name__ == "__main__":
     app()

@@ -13,7 +13,7 @@ from pydantic import BaseModel
 from .config import IngestConfig, load_config
 from .rpc import BitcoinRPCClient, RPCError
 from .schemas import Block, Transaction, TxIn, TxOut
-from .writer import WriterError, append_models, bucket_height
+from .writer import WriterError, append_models, bucket_height, partition_path
 
 console = Console()
 
@@ -38,9 +38,16 @@ class ProcessedHeightIndex:
     def is_done(self, height: int) -> bool:
         return self._marker_path(height).exists()
 
-    def mark_done(self, height: int) -> None:
+    def hash_for(self, height: int) -> str | None:
         marker = self._marker_path(height)
-        marker.write_text("", encoding="utf-8")
+        if not marker.exists():
+            return None
+        contents = marker.read_text(encoding="utf-8").strip()
+        return contents or None
+
+    def mark_done(self, height: int, block_hash: str) -> None:
+        marker = self._marker_path(height)
+        marker.write_text(block_hash, encoding="utf-8")
         if height > self._state.get("max_height", -1):
             self._state["max_height"] = height
             self._write_state()
@@ -51,6 +58,27 @@ class ProcessedHeightIndex:
     def _marker_path(self, height: int) -> Path:
         return self._marker_dir / f"{height}.done"
 
+    def clear_from(self, height: int) -> List[int]:
+        removed: List[int] = []
+        for marker_path in sorted(self._marker_dir.glob("*.done")):
+            stem = marker_path.stem
+            try:
+                marker_height = int(stem)
+            except ValueError:
+                continue
+            if marker_height >= height:
+                marker_path.unlink(missing_ok=True)
+                removed.append(marker_height)
+        if removed:
+            remaining = [
+                int(path.stem)
+                for path in self._marker_dir.glob("*.done")
+                if path.stem.isdigit()
+            ]
+            self._state["max_height"] = max(remaining) if remaining else -1
+            self._write_state()
+        return sorted(removed)
+
 
 def _create_rpc_client(config: IngestConfig) -> BitcoinRPCClient:
     user, password = config.rpc.credentials()
@@ -59,6 +87,7 @@ def _create_rpc_client(config: IngestConfig) -> BitcoinRPCClient:
         config.rpc.port,
         user,
         password,
+        timeout=config.rpc.timeout_seconds,
     )
 
 
@@ -160,12 +189,17 @@ def _parse_block(height: int, block: Dict[str, object]) -> Tuple[
     return block_record, transactions, txins, txouts
 
 
+def _marker_token(dataset: str, height: int) -> str:
+    return f"{dataset}-h{height:012d}"
+
+
 def _flush_buffer(
     *,
     key: Tuple[str, int],
     buffer: List[BaseModel],
     config: IngestConfig,
     counts: MutableMapping[str, int],
+    marker: str | None = None,
 ) -> None:
     dataset, bucket = key
     if not buffer:
@@ -178,6 +212,7 @@ def _flush_buffer(
         height_bucket=bucket,
         compression=config.compression,
         zstd_level=config.zstd_level,
+        marker=marker,
     )
     counts[dataset] += len(buffer)
     buffer.clear()
@@ -201,14 +236,69 @@ def sync_range(
     created_client = client or _create_rpc_client(cfg)
     own_client = client is None
     height_index = ProcessedHeightIndex(cfg.data_root)
-    counts: Dict[str, int] = {name: 0 for name in ("blocks", "transactions", "txin", "txout")}
+    counts: MutableMapping[str, int] = {name: 0 for name in ("blocks", "transactions", "txin", "txout")}
     buffers: DefaultDict[Tuple[str, int], List[BaseModel]] = defaultdict(list)
 
+    def _handle_reorg(
+        *,
+        height: int,
+        block: Dict[str, object],
+        client: BitcoinRPCClient,
+        counts_ref: MutableMapping[str, int],
+    ) -> int | None:
+        prev_height = height - 1
+        if prev_height < 0:
+            return None
+        expected_prev_hash = block.get("previousblockhash")
+        if not isinstance(expected_prev_hash, str):
+            return None
+        stored_prev_hash = height_index.hash_for(prev_height)
+        if stored_prev_hash is None or stored_prev_hash == expected_prev_hash:
+            return None
+        console.log(
+            f"Detected reorg at height {height}: stored prev hash {stored_prev_hash} != node hash {expected_prev_hash}"
+        )
+        rollback_cursor = prev_height
+        matching_height = -1
+        while rollback_cursor >= 0:
+            stored_hash = height_index.hash_for(rollback_cursor)
+            if stored_hash is None:
+                rollback_cursor -= 1
+                continue
+            node_hash = client.get_block_hash(rollback_cursor)
+            if node_hash == stored_hash:
+                matching_height = rollback_cursor
+                break
+            rollback_cursor -= 1
+        resume_height = max(matching_height + 1, 0)
+        removed_heights = height_index.clear_from(resume_height)
+        if removed_heights:
+            for removed_height in removed_heights:
+                _delete_height_artifacts(removed_height, cfg)
+            console.log(
+                f"Rolled back heights {removed_heights[0]}-{removed_heights[-1]} for reorg recovery"
+            )
+            for key in counts_ref:
+                counts_ref[key] = 0
+        else:
+            console.log("Reorg detected but no processed heights to roll back.")
+        return resume_height
+
+    def _delete_height_artifacts(height: int, cfg: IngestConfig) -> None:
+        for dataset in ("blocks", "transactions", "txin", "txout"):
+            bucket = bucket_height(height, cfg.height_bucket_size)
+            output_dir = partition_path(cfg.data_root, cfg.partitions[dataset], height_bucket=bucket)
+            marker = _marker_token(dataset, height)
+            target = output_dir / f"part-{marker}.parquet"
+            target.unlink(missing_ok=True)
+
     try:
-        for height in range(start_height, end_height + 1):
+        height = start_height
+        while height <= end_height:
             console.log(f"Processing height {height}")
             if height_index.is_done(height):
                 console.log(f"Skipping height {height} (already processed)")
+                height += 1
                 continue
 
             try:
@@ -216,6 +306,15 @@ def sync_range(
                 console.log(f"Retrieved block hash {block_hash} for height {height}")
                 block = created_client.get_block(block_hash, verbosity=2)
                 console.log(f"Retrieved block data for height {height}")
+                resume_height = _handle_reorg(
+                    height=height,
+                    block=block,
+                    client=created_client,
+                    counts_ref=counts,
+                )
+                if resume_height is not None and resume_height != height:
+                    height = resume_height
+                    continue
                 block_record, tx_records, txin_records, txout_records = _parse_block(height, block)
             except Exception as e:
                 console.log(f"Error processing height {height}: {e}")
@@ -232,35 +331,46 @@ def sync_range(
                 buffer=buffers[("blocks", bucket)],
                 config=cfg,
                 counts=counts,
+                marker=_marker_token("blocks", height),
             )
             _flush_buffer(
                 key=("transactions", bucket),
                 buffer=buffers[("transactions", bucket)],
                 config=cfg,
                 counts=counts,
+                marker=_marker_token("transactions", height),
             )
 
-            if len(buffers[("txin", bucket)]) >= cfg.limits.io_batch_size:
+            should_flush_txin = bool(txin_records) or (
+                len(buffers[("txin", bucket)]) >= cfg.limits.io_batch_size
+            )
+            if should_flush_txin:
                 _flush_buffer(
                     key=("txin", bucket),
                     buffer=buffers[("txin", bucket)],
                     config=cfg,
                     counts=counts,
+                    marker=_marker_token("txin", height),
                 )
 
-            if len(buffers[("txout", bucket)]) >= cfg.limits.io_batch_size:
+            should_flush_txout = bool(txout_records) or (
+                len(buffers[("txout", bucket)]) >= cfg.limits.io_batch_size
+            )
+            if should_flush_txout:
                 _flush_buffer(
                     key=("txout", bucket),
                     buffer=buffers[("txout", bucket)],
                     config=cfg,
                     counts=counts,
+                    marker=_marker_token("txout", height),
                 )
 
-            height_index.mark_done(height)
+            height_index.mark_done(height, block_record.hash)
             console.log(
                 f"Processed height {height}: blocks=1 tx={len(tx_records)} vin={len(txin_records)} vout={len(txout_records)}"
             )
             console.log(f"Block hash: {block_record.hash}, Block time: {block_record.time_utc}")
+            height += 1
 
         # Final flush
         for key, buffer in list(buffers.items()):

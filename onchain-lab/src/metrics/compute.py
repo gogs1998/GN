@@ -62,7 +62,17 @@ def _read_snapshots(cfg: MetricsConfig) -> Tuple[pd.DataFrame, Tuple[Path, ...]]
     matches = sorted(glob.glob(pattern, recursive=True))
     if not matches:
         raise MetricsBuildError(f"No snapshot parquet files found for pattern '{pattern}'")
-    columns = [
+
+    tables = [pq.read_table(path) for path in matches]
+    table = pa.concat_tables(tables) if len(tables) > 1 else tables[0]
+    frame = table.to_pandas()
+
+    # Drop dataset metadata columns that pyarrow injects when globs match multiple files.
+    metadata_columns = [name for name in frame.columns if name.startswith("__")]
+    if metadata_columns:
+        frame = frame.drop(columns=metadata_columns)
+
+    required = {
         "snapshot_date",
         "group_key",
         "age_bucket",
@@ -70,17 +80,38 @@ def _read_snapshots(cfg: MetricsConfig) -> Tuple[pd.DataFrame, Tuple[Path, ...]]
         "balance_btc",
         "cost_basis_usd",
         "market_value_usd",
-    ]
-    tables = [pq.read_table(path, columns=columns) for path in matches]
-    table = pa.concat_tables(tables) if len(tables) > 1 else tables[0]
-    return table.to_pandas(), tuple(Path(path).resolve() for path in matches)
+    }
+    missing_required = required.difference(frame.columns)
+    if missing_required:
+        joined = ", ".join(sorted(missing_required))
+        raise MetricsBuildError(f"Snapshot parquet missing required columns: {joined}")
+
+    optional_defaults: dict[str, object] = {
+        "avg_age_days": 0.0,
+        "price_close": float("nan"),
+        "entity_id": None,
+        "entity_type": None,
+        "cluster_balance_sats": 0.0,
+    }
+    for column, default in optional_defaults.items():
+        if column not in frame.columns:
+            frame[column] = default
+
+    return frame, tuple(Path(path).resolve() for path in matches)
 
 
 def _read_spent(cfg: MetricsConfig) -> Tuple[pd.DataFrame, Tuple[Path, ...]]:
     path = cfg.data.lifecycle.spent
     if not path.exists():
         raise MetricsBuildError(f"Spent dataset missing at {path}")
-    columns = [
+    table = pq.read_table(path)
+    frame = table.to_pandas()
+
+    metadata_columns = [name for name in frame.columns if name.startswith("__")]
+    if metadata_columns:
+        frame = frame.drop(columns=metadata_columns)
+
+    required = {
         "source_txid",
         "source_vout",
         "spend_txid",
@@ -92,9 +123,21 @@ def _read_spent(cfg: MetricsConfig) -> Tuple[pd.DataFrame, Tuple[Path, ...]]:
         "realized_profit_usd",
         "spend_price_close",
         "creation_price_close",
-    ]
-    table = pq.read_table(path, columns=columns)
-    return table.to_pandas(), (path.resolve(),)
+    }
+    missing_required = required.difference(frame.columns)
+    if missing_required:
+        joined = ", ".join(sorted(missing_required))
+        raise MetricsBuildError(f"Spent parquet missing required columns: {joined}")
+
+    optional_defaults: dict[str, object] = {
+        "entity_id": None,
+        "entity_type": None,
+    }
+    for column, default in optional_defaults.items():
+        if column not in frame.columns:
+            frame[column] = default
+
+    return frame, (path.resolve(),)
 
 
 def _core_metric_columns() -> Sequence[str]:

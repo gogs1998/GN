@@ -1,10 +1,10 @@
 data:
-  price_glob: "../data/prices/**/*.parquet"
+  price_glob: "D:/Blockchain/onchain-data/prices/**/*.parquet"
   lifecycle:
-    created: "../data/utxo/created/created.parquet"
-    spent: "../data/utxo/spent/spent.parquet"
-    snapshots_glob: "../data/utxo/snapshots/daily/*.parquet"
-  output_root: "../data/metrics/daily"
+    created: "D:/Blockchain/onchain-data/utxo/created/created.parquet"
+    spent: "D:/Blockchain/onchain-data/utxo/spent/spent.parquet"
+    snapshots_glob: "D:/Blockchain/onchain-data/utxo/snapshots/daily/*.parquet"
+  output_root: "D:/Blockchain/onchain-data/metrics/daily"
   symbol: "BTCUSDT"
   frequency: "1d"
 engine:
@@ -15,17 +15,17 @@ qa:
   golden_days:
     - date: 2025-11-07
       metrics:
-        price_close: 35250.0
+        price_close: 103339.08
         utxo_profit_share: 1.0
       tolerance_pct: 1.0
     - date: 2025-11-08
       metrics:
-        price_close: 35480.0
+        price_close: 102312.94
         utxo_profit_share: 1.0
       tolerance_pct: 1.0
     - date: 2025-11-09
       metrics:
-        price_close: 35720.0
+        price_close: 104722.96
         utxo_profit_share: 1.0
       tolerance_pct: 1.0
   max_drawdown_pct: 95.0

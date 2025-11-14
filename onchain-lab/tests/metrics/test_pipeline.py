@@ -160,7 +160,9 @@ def test_build_daily_metrics_writes_parquet_and_passes_qa(tmp_path: Path) -> Non
     assert len(result.provenance.price_hash) == 12
     assert len(result.provenance.snapshot_hash) == 12
     assert len(result.provenance.spent_hash) == 12
-    assert result.provenance.formulas_version.startswith("metrics-formulas@metrics.v1+")
+    assert result.provenance.formulas_version.startswith(
+        f"metrics-formulas@{pipeline_version()}+"
+    )
 
     table = pq.read_table(result.output_path)
     assert table.num_rows == 2

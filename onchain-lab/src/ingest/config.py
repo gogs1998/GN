@@ -6,7 +6,14 @@ from pathlib import Path
 from typing import Dict, List, Optional
 
 import yaml
-from pydantic import BaseModel, Field, PositiveInt, ValidationError, field_validator
+from pydantic import (
+    BaseModel,
+    Field,
+    PositiveFloat,
+    PositiveInt,
+    ValidationError,
+    field_validator,
+)
 from dotenv import load_dotenv
 
 _CONFIG_DEFAULT_PATH = Path("config/ingest.yaml")
@@ -30,6 +37,7 @@ class RPCConfig(BaseModel):
     port: PositiveInt
     user_env: str = Field(alias="user_env")
     pass_env: str = Field(alias="pass_env")
+    timeout_seconds: PositiveFloat = Field(default=120.0)
 
     model_config = {"populate_by_name": True}
 

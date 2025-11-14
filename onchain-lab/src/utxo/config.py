@@ -36,9 +36,21 @@ class PriceConfig(BaseModel):
     freq: str
 
 
+class EntitiesConfig(BaseModel):
+    lookup: Optional[Path] = Field(default=None)
+
+    @field_validator("lookup", mode="before")
+    @classmethod
+    def _validate_lookup(cls, value: Optional[str | Path]) -> Optional[Path]:
+        if value in (None, "", "null"):
+            return None
+        return Path(value).resolve()
+
+
 class DataConfig(BaseModel):
     ingest: IngestPaths
     price: PriceConfig
+    entities: Optional[EntitiesConfig] = None
     lifecycle_root: Path
 
     model_config = {"arbitrary_types_allowed": True}

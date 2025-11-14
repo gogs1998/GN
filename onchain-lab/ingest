@@ -1,0 +1,41 @@
+{
+  "2009-01-03": {
+    "blocks": 1,
+    "coinbase_sats": 5000000000,
+    "sources": [
+      "Bitcoin Core genesis block (height 0)"
+    ],
+    "tolerance_pct": 0.1,
+    "transactions": 1
+  },
+  "2017-08-01": {
+    "blocks": 148,
+    "coinbase_sats": 185000000000,
+    "sources": [
+      "https://api.blockchain.info/charts/total-bitcoins?format=json&timespan=2days&start=2017-08-01",
+      "https://api.blockchain.info/charts/n-transactions?format=json&timespan=1days&start=2017-08-01"
+    ],
+    "tolerance_pct": 0.5,
+    "transactions": 131875
+  },
+  "2020-05-11": {
+    "blocks": 157,
+    "coinbase_sats": 180000000000,
+    "sources": [
+      "https://api.blockchain.info/charts/total-bitcoins?format=json&timespan=2days&start=2020-05-11",
+      "https://api.blockchain.info/charts/n-transactions?format=json&timespan=1days&start=2020-05-11"
+    ],
+    "tolerance_pct": 0.5,
+    "transactions": 305839
+  },
+  "2024-04-20": {
+    "blocks": 129,
+    "coinbase_sats": 40312500000,
+    "sources": [
+      "https://api.blockchain.info/charts/total-bitcoins?format=json&timespan=2days&start=2024-04-20",
+      "https://api.blockchain.info/charts/n-transactions?format=json&timespan=1days&start=2024-04-20"
+    ],
+    "tolerance_pct": 0.5,
+    "transactions": 631001
+  }
+}

@@ -42,7 +42,7 @@ class FeatureTransformsConfig(BaseModel):
 class FeaturesConfig(BaseModel):
     include: List[str]
     hodl_pattern: str = ""
-    transforms: FeatureTransformsConfig = Field(default_factory=FeatureTransformsConfig)
+    transforms: FeatureTransformsConfig = Field(default_factory=lambda: FeatureTransformsConfig())
 
     @field_validator("include")
     @classmethod
@@ -103,9 +103,9 @@ class CNNLSTMConfig(BaseModel):
 
 class ModelsConfig(BaseModel):
     enabled: List[str]
-    logreg: LogRegConfig = Field(default_factory=LogRegConfig)
-    xgboost: XGBoostConfig = Field(default_factory=XGBoostConfig)
-    cnn_lstm: CNNLSTMConfig = Field(default_factory=CNNLSTMConfig)
+    logreg: LogRegConfig = Field(default_factory=lambda: LogRegConfig())
+    xgboost: XGBoostConfig = Field(default_factory=lambda: XGBoostConfig())
+    cnn_lstm: CNNLSTMConfig = Field(default_factory=lambda: CNNLSTMConfig())
 
     @field_validator("enabled", mode="after")
     @classmethod
@@ -124,6 +124,23 @@ class ModelsConfig(BaseModel):
 class DecisionConfig(BaseModel):
     prob_threshold: float = Field(0.55, gt=0, lt=1)
     side: Literal["long_flat", "long_short"] = "long_flat"
+    model_thresholds: dict[str, float] = Field(default_factory=dict)
+
+    @field_validator("model_thresholds", mode="after")
+    @classmethod
+    def _validate_model_thresholds(cls, value: dict[str, float]) -> dict[str, float]:
+        allowed = {"logreg", "xgboost", "cnn_lstm"}
+        for name, threshold in value.items():
+            if name not in allowed:
+                raise ValueError(f"unknown model '{name}' in decision.model_thresholds")
+            if not 0 < threshold < 1:
+                raise ValueError(
+                    f"decision.model_thresholds[{name}] must be between 0 and 1 (exclusive)"
+                )
+        return value
+
+    def threshold_for(self, model_name: str) -> float:
+        return self.model_thresholds.get(model_name, self.prob_threshold)
 
 
 class CostsConfig(BaseModel):
@@ -142,6 +159,8 @@ class QAConfig(BaseModel):
     forbid_future_lookahead: bool = True
     min_oos_start: str = "2018-01-01"
     tolerance_pct: float = Field(0.5, ge=0)
+    require_positive_trades: bool = True
+    require_positive_exposure: bool = True
 
 
 class RegistryConfig(BaseModel):

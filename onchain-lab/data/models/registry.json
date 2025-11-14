@@ -126,5 +126,173 @@
     "summary_path": "D:\\VSCode\\GN\\onchain-lab\\data\\models\\cnn_lstm\\backtest\\summary.json",
     "timestamp": "2025-11-10T19:51:30.997470+00:00",
     "total_return": 0.0
+  },
+  {
+    "equity_path": "D:\\VSCode\\GN\\onchain-lab\\data\\models\\logreg\\backtest\\equity.parquet",
+    "model": "logreg",
+    "sharpe": 3.8049233244468144,
+    "summary_path": "D:\\VSCode\\GN\\onchain-lab\\data\\models\\logreg\\backtest\\summary.json",
+    "timestamp": "2025-11-11T10:30:23.734513+00:00",
+    "total_return": 0.24862013503995817
+  },
+  {
+    "equity_path": "D:\\VSCode\\GN\\onchain-lab\\data\\models\\xgboost\\backtest\\equity.parquet",
+    "model": "xgboost",
+    "sharpe": 1.3354146754607663,
+    "summary_path": "D:\\VSCode\\GN\\onchain-lab\\data\\models\\xgboost\\backtest\\summary.json",
+    "timestamp": "2025-11-11T10:30:25.485998+00:00",
+    "total_return": 0.007660682788402484
+  },
+  {
+    "equity_path": "D:\\VSCode\\GN\\onchain-lab\\data\\models\\cnn_lstm\\backtest\\equity.parquet",
+    "model": "cnn_lstm",
+    "sharpe": NaN,
+    "summary_path": "D:\\VSCode\\GN\\onchain-lab\\data\\models\\cnn_lstm\\backtest\\summary.json",
+    "timestamp": "2025-11-11T10:30:29.364479+00:00",
+    "total_return": 0.0
+  },
+  {
+    "equity_path": "D:\\VSCode\\GN\\onchain-lab\\data\\models\\logreg\\backtest\\equity.parquet",
+    "model": "logreg",
+    "sharpe": 1.7673414663067903,
+    "summary_path": "D:\\VSCode\\GN\\onchain-lab\\data\\models\\logreg\\backtest\\summary.json",
+    "timestamp": "2025-11-11T11:18:33.091226+00:00",
+    "total_return": 0.07627060130337537
+  },
+  {
+    "equity_path": "D:\\VSCode\\GN\\onchain-lab\\data\\models\\xgboost\\backtest\\equity.parquet",
+    "model": "xgboost",
+    "sharpe": 0.883748925974027,
+    "summary_path": "D:\\VSCode\\GN\\onchain-lab\\data\\models\\xgboost\\backtest\\summary.json",
+    "timestamp": "2025-11-11T11:18:35.100128+00:00",
+    "total_return": 0.1680487243265949
+  },
+  {
+    "equity_path": "D:\\VSCode\\GN\\onchain-lab\\data\\models\\cnn_lstm\\backtest\\equity.parquet",
+    "model": "cnn_lstm",
+    "sharpe": NaN,
+    "summary_path": "D:\\VSCode\\GN\\onchain-lab\\data\\models\\cnn_lstm\\backtest\\summary.json",
+    "timestamp": "2025-11-11T11:18:38.642998+00:00",
+    "total_return": 0.0
+  },
+  {
+    "equity_path": "D:\\VSCode\\GN\\onchain-lab\\data\\models\\logreg\\backtest\\equity.parquet",
+    "model": "logreg",
+    "sharpe": 1.7673414663067903,
+    "summary_path": "D:\\VSCode\\GN\\onchain-lab\\data\\models\\logreg\\backtest\\summary.json",
+    "timestamp": "2025-11-11T13:45:50.041500+00:00",
+    "total_return": 0.07627060130337537
+  },
+  {
+    "equity_path": "D:\\VSCode\\GN\\onchain-lab\\data\\models\\xgboost\\backtest\\equity.parquet",
+    "model": "xgboost",
+    "sharpe": 0.883748925974027,
+    "summary_path": "D:\\VSCode\\GN\\onchain-lab\\data\\models\\xgboost\\backtest\\summary.json",
+    "timestamp": "2025-11-11T13:45:51.976227+00:00",
+    "total_return": 0.1680487243265949
+  },
+  {
+    "equity_path": "D:\\VSCode\\GN\\onchain-lab\\data\\models\\cnn_lstm\\backtest\\equity.parquet",
+    "model": "cnn_lstm",
+    "sharpe": NaN,
+    "summary_path": "D:\\VSCode\\GN\\onchain-lab\\data\\models\\cnn_lstm\\backtest\\summary.json",
+    "timestamp": "2025-11-11T13:45:55.333423+00:00",
+    "total_return": 0.0
+  },
+  {
+    "equity_path": "D:\\VSCode\\GN\\onchain-lab\\data\\models\\logreg\\backtest\\equity.parquet",
+    "model": "logreg",
+    "sharpe": 1.7673414663067903,
+    "summary_path": "D:\\VSCode\\GN\\onchain-lab\\data\\models\\logreg\\backtest\\summary.json",
+    "timestamp": "2025-11-11T14:04:51.118440+00:00",
+    "total_return": 0.07627060130337537
+  },
+  {
+    "equity_path": "D:\\VSCode\\GN\\onchain-lab\\data\\models\\xgboost\\backtest\\equity.parquet",
+    "model": "xgboost",
+    "sharpe": 0.883748925974027,
+    "summary_path": "D:\\VSCode\\GN\\onchain-lab\\data\\models\\xgboost\\backtest\\summary.json",
+    "timestamp": "2025-11-11T14:04:52.987536+00:00",
+    "total_return": 0.1680487243265949
+  },
+  {
+    "equity_path": "D:\\VSCode\\GN\\onchain-lab\\data\\models\\cnn_lstm\\backtest\\equity.parquet",
+    "model": "cnn_lstm",
+    "sharpe": NaN,
+    "summary_path": "D:\\VSCode\\GN\\onchain-lab\\data\\models\\cnn_lstm\\backtest\\summary.json",
+    "timestamp": "2025-11-11T14:04:56.362253+00:00",
+    "total_return": 0.0
+  },
+  {
+    "equity_path": "D:\\VSCode\\GN\\onchain-lab\\data\\models\\logreg\\backtest\\equity.parquet",
+    "model": "logreg",
+    "sharpe": 1.7673414663067903,
+    "summary_path": "D:\\VSCode\\GN\\onchain-lab\\data\\models\\logreg\\backtest\\summary.json",
+    "timestamp": "2025-11-11T15:09:15.922184+00:00",
+    "total_return": 0.07627060130337537
+  },
+  {
+    "equity_path": "D:\\VSCode\\GN\\onchain-lab\\data\\models\\xgboost\\backtest\\equity.parquet",
+    "model": "xgboost",
+    "sharpe": 0.883748925974027,
+    "summary_path": "D:\\VSCode\\GN\\onchain-lab\\data\\models\\xgboost\\backtest\\summary.json",
+    "timestamp": "2025-11-11T15:09:17.825641+00:00",
+    "total_return": 0.1680487243265949
+  },
+  {
+    "equity_path": "D:\\VSCode\\GN\\onchain-lab\\data\\models\\logreg\\backtest\\equity.parquet",
+    "model": "logreg",
+    "sharpe": 1.7673414663067903,
+    "summary_path": "D:\\VSCode\\GN\\onchain-lab\\data\\models\\logreg\\backtest\\summary.json",
+    "timestamp": "2025-11-11T15:10:55.451945+00:00",
+    "total_return": 0.07627060130337537
+  },
+  {
+    "equity_path": "D:\\VSCode\\GN\\onchain-lab\\data\\models\\xgboost\\backtest\\equity.parquet",
+    "model": "xgboost",
+    "sharpe": 0.883748925974027,
+    "summary_path": "D:\\VSCode\\GN\\onchain-lab\\data\\models\\xgboost\\backtest\\summary.json",
+    "timestamp": "2025-11-11T15:10:57.435300+00:00",
+    "total_return": 0.1680487243265949
+  },
+  {
+    "equity_path": "D:\\VSCode\\GN\\onchain-lab\\data\\models\\logreg\\backtest\\equity.parquet",
+    "model": "logreg",
+    "sharpe": 1.7673414663067903,
+    "summary_path": "D:\\VSCode\\GN\\onchain-lab\\data\\models\\logreg\\backtest\\summary.json",
+    "timestamp": "2025-11-14T16:56:44.691376+00:00",
+    "total_return": 0.07627060130337537
+  },
+  {
+    "equity_path": "D:\\VSCode\\GN\\onchain-lab\\data\\models\\xgboost\\backtest\\equity.parquet",
+    "model": "xgboost",
+    "sharpe": 0.883748925974027,
+    "summary_path": "D:\\VSCode\\GN\\onchain-lab\\data\\models\\xgboost\\backtest\\summary.json",
+    "timestamp": "2025-11-14T16:56:52.857771+00:00",
+    "total_return": 0.1680487243265949
+  },
+  {
+    "equity_path": "D:\\VSCode\\GN\\onchain-lab\\data\\models\\logreg\\backtest\\equity.parquet",
+    "model": "logreg",
+    "sharpe": 1.7673414663067903,
+    "summary_path": "D:\\VSCode\\GN\\onchain-lab\\data\\models\\logreg\\backtest\\summary.json",
+    "timestamp": "2025-11-14T17:22:15.111806+00:00",
+    "total_return": 0.07627060130337537
+  },
+  {
+    "equity_path": "D:\\VSCode\\GN\\onchain-lab\\data\\models\\xgboost\\backtest\\equity.parquet",
+    "model": "xgboost",
+    "sharpe": 0.883748925974027,
+    "summary_path": "D:\\VSCode\\GN\\onchain-lab\\data\\models\\xgboost\\backtest\\summary.json",
+    "timestamp": "2025-11-14T17:22:22.494053+00:00",
+    "total_return": 0.1680487243265949
+  },
+  {
+    "equity_path": "D:\\VSCode\\GN\\onchain-lab\\data\\models\\cnn_lstm\\backtest\\equity.parquet",
+    "model": "cnn_lstm",
+    "sharpe": -0.27031045856093444,
+    "summary_path": "D:\\VSCode\\GN\\onchain-lab\\data\\models\\cnn_lstm\\backtest\\summary.json",
+    "timestamp": "2025-11-14T17:22:30.667913+00:00",
+    "total_return": -0.06537817381761124
   }
 ]

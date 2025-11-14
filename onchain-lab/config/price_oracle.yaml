@@ -1,4 +1,4 @@
-data_root: "data/prices"
+data_root: "D:/Blockchain/onchain-data/prices"
 symbols: ["BTCUSDT"]
 freqs: ["1h", "1d"]
 primary: "binance"

@@ -11,8 +11,8 @@ SRC_DIR = ROOT / "src"
 if str(SRC_DIR) not in sys.path:
     sys.path.append(str(SRC_DIR))
 
-from models.backtest import run_backtest
-from models.config import (
+from models.backtest import run_backtest  # type: ignore[import]
+from models.config import (  # type: ignore[import]
     BorutaConfig,
     CNNLSTMConfig,
     CostsConfig,
@@ -96,3 +96,13 @@ def test_backtest_enforces_min_oos_start() -> None:
     )
     with pytest.raises(ValueError):
         run_backtest("logreg", _make_predictions(), updated)
+
+
+def test_backtest_uses_model_specific_threshold() -> None:
+    base = _make_config()
+    overrides = base.decision.model_copy(
+        update={"prob_threshold": 0.9, "model_thresholds": {"logreg": 0.6}}
+    )
+    config = base.model_copy(update={"decision": overrides})
+    result = run_backtest("logreg", _make_predictions(), config)
+    assert result.equity["signal"].abs().sum() > 0

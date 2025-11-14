@@ -9,8 +9,9 @@ from .backtest import persist_backtest, register_backtest, run_backtest
 from .baselines_core import load_predictions, train_model
 from .boruta import BorutaRunner, load_selected_features
 from .config import ModelConfig, load_model_config
-from .eval import compute_split_metrics, generate_plots, save_metrics
+from .eval import compute_confusion_matrices, compute_split_metrics, generate_plots, save_metrics
 from .frame import FrameArtifactError, FrameBuilder
+from .utils import save_json
 
 app = typer.Typer(help="Stage 5 modeling CLI", add_completion=False)
 
@@ -44,7 +45,7 @@ def _ensure_frame(config: ModelConfig) -> FrameBuilder:
 
 
 @app.command()
-def build_frame(config_path: Optional[Path] = typer.Option(None, "--config", path_type=Path)) -> None:
+def build_frame(config_path: Optional[Path] = typer.Option(None, "--config")) -> None:
     """Construct the modeling frame and persist artifacts."""
 
     config = _load_config(config_path)
@@ -61,7 +62,7 @@ def build_frame(config_path: Optional[Path] = typer.Option(None, "--config", pat
 
 
 @app.command()
-def run_boruta(config_path: Optional[Path] = typer.Option(None, "--config", path_type=Path)) -> None:
+def run_boruta(config_path: Optional[Path] = typer.Option(None, "--config")) -> None:
     """Execute Boruta feature selection on the training split."""
 
     config = _load_config(config_path)
@@ -80,7 +81,7 @@ def run_boruta(config_path: Optional[Path] = typer.Option(None, "--config", path
 
 @app.command()
 def train(
-    config_path: Optional[Path] = typer.Option(None, "--config", path_type=Path),
+    config_path: Optional[Path] = typer.Option(None, "--config"),
     model: List[str] = typer.Option([], "--model", "-m"),
 ) -> None:
     """Train baseline models using the prepared frame."""
@@ -106,7 +107,7 @@ def train(
 @app.command()
 def evaluate(
     model: str = typer.Argument(..., help="Model name to evaluate"),
-    config_path: Optional[Path] = typer.Option(None, "--config", path_type=Path),
+    config_path: Optional[Path] = typer.Option(None, "--config"),
 ) -> None:
     """Compute evaluation metrics and diagnostic plots for a trained model."""
 
@@ -116,18 +117,23 @@ def evaluate(
     except Exception as exc:
         typer.echo(f"Failed to load predictions for {model}: {exc}")
         raise typer.Exit(code=5) from exc
-    metrics = compute_split_metrics(predictions, config.decision.prob_threshold)
+    threshold = config.decision.threshold_for(model)
+    metrics = compute_split_metrics(predictions, threshold)
+    matrices = compute_confusion_matrices(predictions, threshold)
     out_dir = config.data.out_root / model / "eval"
     generate_plots(predictions[predictions["split"] != "train"], out_dir, model)
     metrics_path = out_dir / "metrics.json"
     save_metrics(metrics, metrics_path)
+    matrices_path = out_dir / "confusion_matrices.json"
+    save_json(matrices_path, matrices)
     typer.echo(f"Saved evaluation metrics to {metrics_path}")
+    typer.echo(f"Saved confusion matrices to {matrices_path}")
 
 
 @app.command()
 def backtest(
     model: str = typer.Argument(..., help="Model name to backtest"),
-    config_path: Optional[Path] = typer.Option(None, "--config", path_type=Path),
+    config_path: Optional[Path] = typer.Option(None, "--config"),
 ) -> None:
     """Run the trading backtest and append results to the registry."""
 
@@ -151,7 +157,7 @@ def backtest(
 
 @app.command()
 def full_run(
-    config_path: Optional[Path] = typer.Option(None, "--config", path_type=Path),
+    config_path: Optional[Path] = typer.Option(None, "--config"),
 ) -> None:
     """Execute frame build, Boruta (if enabled), training, evaluation, and backtest sequentially."""
 
@@ -173,10 +179,13 @@ def full_run(
             f"Artifacts: model -> {run.model_path}, predictions -> {run.predictions_path}, signals -> {run.signals_path}."
         )
         typer.echo("Evaluating...")
-        metrics = compute_split_metrics(run.predictions, config.decision.prob_threshold)
+        threshold = config.decision.threshold_for(name)
+        metrics = compute_split_metrics(run.predictions, threshold)
+        matrices = compute_confusion_matrices(run.predictions, threshold)
         out_dir = config.data.out_root / name / "eval"
         generate_plots(run.predictions[run.predictions["split"] != "train"], out_dir, name)
         save_metrics(metrics, out_dir / "metrics.json")
+        save_json(out_dir / "confusion_matrices.json", matrices)
         typer.echo("Running backtest...")
         backtest_result = run_backtest(name, run.predictions, config)
         backtest_result = persist_backtest(backtest_result, config)

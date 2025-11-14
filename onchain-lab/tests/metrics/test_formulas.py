@@ -33,39 +33,55 @@ def _snapshot_frame() -> pd.DataFrame:
         [
             {
                 "snapshot_date": datetime(2024, 1, 1),
-                "group_key": "g1",
+                "group_key": "g_exchange",
                 "age_bucket": "000-001d",
                 "balance_sats": 60_000_000,
                 "balance_btc": 0.6,
                 "cost_basis_usd": 24_000.0,
                 "market_value_usd": 30_300.0,
+                "avg_age_days": 0.5,
+                "entity_id": "exch-1",
+                "entity_type": "exchange",
+                "cluster_balance_sats": 80_000_000,
             },
             {
                 "snapshot_date": datetime(2024, 1, 1),
-                "group_key": "g2",
+                "group_key": "g_whale",
                 "age_bucket": "030-180d",
                 "balance_sats": 40_000_000,
                 "balance_btc": 0.4,
                 "cost_basis_usd": 16_000.0,
                 "market_value_usd": 20_200.0,
+                "avg_age_days": 90.0,
+                "entity_id": "whale-1",
+                "entity_type": "whale",
+                "cluster_balance_sats": 200_000_000,
             },
             {
                 "snapshot_date": datetime(2024, 1, 2),
-                "group_key": "g1",
+                "group_key": "g_exchange",
                 "age_bucket": "000-001d",
                 "balance_sats": 55_000_000,
                 "balance_btc": 0.55,
                 "cost_basis_usd": 23_100.0,
                 "market_value_usd": 28_600.0,
+                "avg_age_days": 0.6,
+                "entity_id": "exch-1",
+                "entity_type": "exchange",
+                "cluster_balance_sats": 70_000_000,
             },
             {
                 "snapshot_date": datetime(2024, 1, 2),
-                "group_key": "g2",
+                "group_key": "g_whale",
                 "age_bucket": "030-180d",
                 "balance_sats": 45_000_000,
                 "balance_btc": 0.45,
                 "cost_basis_usd": 18_900.0,
                 "market_value_usd": 23_400.0,
+                "avg_age_days": 95.0,
+                "entity_id": "whale-1",
+                "entity_type": "whale",
+                "cluster_balance_sats": 210_000_000,
             },
         ]
     )
@@ -86,6 +102,23 @@ def _spent_frame() -> pd.DataFrame:
                 "realized_profit_usd": 2_000.0,
                 "spend_price_close": 52_000.0,
                 "creation_price_close": 48_000.0,
+                "entity_id": "exch-1",
+                "entity_type": "exchange",
+            },
+            {
+                "source_txid": "ccc",
+                "source_vout": 1,
+                "spend_txid": "ddd",
+                "value_sats": 30_000_000,
+                "created_time": datetime(2023, 7, 1, tzinfo=timezone.utc),
+                "spend_time": datetime(2024, 1, 2, 15, tzinfo=timezone.utc),
+                "holding_days": 200.0,
+                "realized_value_usd": 16_500.0,
+                "realized_profit_usd": 4_500.0,
+                "spend_price_close": 55_000.0,
+                "creation_price_close": 40_000.0,
+                "entity_id": "whale-1",
+                "entity_type": "whale",
             }
         ]
     )
@@ -111,7 +144,7 @@ def test_compute_metrics_generates_expected_columns() -> None:
     assert pytest.approx(day1["hodl_share_000_001d"], rel=1e-6) == 0.6
 
     day2 = frame.iloc[1]
-    expected_sopr = 26_000.0 / 24_000.0
+    expected_sopr = 42_500.0 / 36_000.0
     assert pytest.approx(day2["sopr"], rel=1e-6) == expected_sopr
     assert pytest.approx(day2["asopr"], rel=1e-6) == expected_sopr
     assert np.isnan(day2["realized_profit_loss_ratio"])
@@ -120,6 +153,7 @@ def test_compute_metrics_generates_expected_columns() -> None:
     assert pytest.approx(day2["mvrv"], rel=1e-6) == expected_mvrv
 
     assert frame["drawdown_pct"].min() <= 0.0
+    assert "exchange_net_flow_btc" in frame.columns
 
 
 def test_supply_cost_basis_forward_fill_without_realized_backfill() -> None:
@@ -146,3 +180,31 @@ def test_adjusted_cdd_stays_zero_when_no_spend() -> None:
 
     assert day1["adjusted_cdd"] == 0.0
     assert day2["adjusted_cdd"] == 0.0
+
+
+def test_stage4_metrics_are_calculated() -> None:
+    engine = EngineConfig(mvrv_window_days=2, dormancy_window_days=2, drawdown_window_days=2)
+    result = compute_metrics(_price_frame(), _snapshot_frame(), _spent_frame(), engine)
+
+    frame = result.frame.set_index("date")
+    day2 = frame.loc[date(2024, 1, 2)]
+
+    assert pytest.approx(day2["exchange_supply_pct"], rel=1e-6) == 0.55
+    assert pytest.approx(day2["exchange_net_flow_btc"], rel=1e-6) == -0.05
+    assert pytest.approx(day2["exchange_net_flow_usd"], rel=1e-6) == -0.05 * 52_000.0
+    assert pytest.approx(day2["exchange_dormancy"], rel=1e-6) == 0.6
+
+    assert pytest.approx(day2["whale_supply_btc"], rel=1e-6) == 0.45
+    assert pytest.approx(day2["whale_dormancy"], rel=1e-6) == 95.0
+    assert pytest.approx(day2["whale_realized_pl_usd"], rel=1e-6) == 4_500.0
+
+    assert pytest.approx(day2["sopr_entity_adjusted"], rel=1e-6) == 16_500.0 / 12_000.0
+    expected_delta = (16_500.0 / 12_000.0) - (26_000.0 / 24_000.0)
+    assert pytest.approx(day2["sopr_long_short_delta"], rel=1e-6) == expected_delta
+    assert pytest.approx(day2["spent_profit_delta_usd"], rel=1e-6) == 6_500.0
+
+    assert pytest.approx(day2["realized_cap_0_1d"], rel=1e-6) == 23_100.0
+    assert pytest.approx(day2["realized_cap_30_180d"], rel=1e-6) == 18_900.0
+    assert day2["realized_cap_365d_plus"] == 0.0
+    assert pytest.approx(day2["realized_cap_exchange"], rel=1e-6) == 23_100.0
+    assert pytest.approx(day2["realized_cap_whale"], rel=1e-6) == 18_900.0

@@ -112,7 +112,7 @@
   "forward_return_column": "forward_return",
   "label_column": "label",
   "lookback": 30,
-  "rows": 567,
+  "rows": 1392,
   "sequence_features": [
     "price_close",
     "realized_profit_usd",
@@ -136,7 +136,7 @@
     "hodl_share_180_365d",
     "hodl_share_365d_plus"
   ],
-  "sklearn_version": "1.7.0",
+  "sklearn_version": "1.7.2",
   "split_column": "split",
-  "start_date": "2024-04-19"
+  "start_date": "2022-01-15"
 }

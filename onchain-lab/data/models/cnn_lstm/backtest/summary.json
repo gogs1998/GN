@@ -1,35 +1,35 @@
 {
   "overall": {
-    "annual_return": 0.0,
-    "annual_vol": 0.0,
-    "avg_trade_return": NaN,
-    "exposure": 0.0,
-    "max_drawdown": 0.0,
-    "sharpe": NaN,
-    "total_return": 0.0,
-    "trades": 0.0,
-    "win_rate": 0.0
+    "annual_return": -0.09364310160460043,
+    "annual_vol": 0.3464279632506007,
+    "avg_trade_return": -0.00010916959930458285,
+    "exposure": 0.8406374501992032,
+    "max_drawdown": -0.18701085380913351,
+    "sharpe": -0.27031045856093444,
+    "total_return": -0.06537817381761124,
+    "trades": 7.0,
+    "win_rate": 0.4302788844621514
   },
   "test": {
-    "annual_return": 0.0,
-    "annual_vol": 0.0,
-    "avg_trade_return": NaN,
-    "exposure": 0.0,
-    "max_drawdown": 0.0,
-    "sharpe": NaN,
-    "total_return": 0.0,
+    "annual_return": -0.2901294983787993,
+    "annual_vol": 0.36455876836593626,
+    "avg_trade_return": -0.0007544901175817312,
+    "exposure": 1.0,
+    "max_drawdown": -0.1870108538091333,
+    "sharpe": -0.7958373890696645,
+    "total_return": -0.08789966418627393,
     "trades": 0.0,
-    "win_rate": 0.0
+    "win_rate": 0.5204081632653061
   },
   "val": {
-    "annual_return": 0.0,
-    "annual_vol": 0.0,
-    "avg_trade_return": NaN,
-    "exposure": 0.0,
-    "max_drawdown": 0.0,
-    "sharpe": NaN,
-    "total_return": 0.0,
-    "trades": 0.0,
-    "win_rate": 0.0
+    "annual_return": 0.05991638478519046,
+    "annual_vol": 0.33405550203466366,
+    "avg_trade_return": 0.000450488903272059,
+    "exposure": 0.738562091503268,
+    "max_drawdown": -0.17892185879570455,
+    "sharpe": 0.1793605685889082,
+    "total_return": 0.024691900095147545,
+    "trades": 7.0,
+    "win_rate": 0.37254901960784315
   }
 }

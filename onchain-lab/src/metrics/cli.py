@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import json
-from datetime import datetime
+from datetime import date, datetime
 from pathlib import Path
 from typing import Optional
 
@@ -30,9 +30,9 @@ def _config(path: Optional[Path]) -> MetricsConfig:
 
 @app.command()
 def build(
-    config_path: Optional[Path] = typer.Option(None, "--config", path_type=Path),
+    config_path: Optional[Path] = typer.Option(None, "--config"),
     registry_path: Optional[Path] = typer.Option(
-        Path("config/metrics_registry.yaml"), "--registry", path_type=Path
+        Path("config/metrics_registry.yaml"), "--registry"
     ),
 ) -> None:
     """Build the daily metrics dataset and run QA checks."""
@@ -65,7 +65,7 @@ def build(
 
 
 @app.command()
-def show_config(config_path: Optional[Path] = typer.Option(None, "--config", path_type=Path)) -> None:
+def show_config(config_path: Optional[Path] = typer.Option(None, "--config")) -> None:
     """Display the active metrics configuration."""
 
     cfg = _config(config_path)
@@ -114,11 +114,11 @@ def registry() -> None:
 
 @app.command()
 def docs(
-    output_dir: Path = typer.Option(Path("docs"), "--output", "-o", path_type=Path),
-    registry_path: Optional[Path] = typer.Option(None, "--registry", path_type=Path),
-    mkdocs_file: Path = typer.Option(Path("mkdocs.yml"), "--mkdocs-file", path_type=Path),
-    config_path: Optional[Path] = typer.Option(None, "--config", path_type=Path),
-    metrics_path: Optional[Path] = typer.Option(None, "--metrics", path_type=Path),
+    output_dir: Path = typer.Option(Path("docs"), "--output", "-o"),
+    registry_path: Optional[Path] = typer.Option(None, "--registry"),
+    mkdocs_file: Path = typer.Option(Path("mkdocs.yml"), "--mkdocs-file"),
+    config_path: Optional[Path] = typer.Option(None, "--config"),
+    metrics_path: Optional[Path] = typer.Option(None, "--metrics"),
 ) -> None:
     """Generate Markdown evidence for each metric in the registry."""
 
@@ -157,7 +157,7 @@ def docs(
         typer.echo(f"Golden artifacts generated: {len(golden_paths)}")
 
 
-def _parse_date(raw: str) -> datetime.date:
+def _parse_date(raw: str) -> date:
     try:
         return datetime.strptime(raw, "%Y-%m-%d").date()
     except ValueError as exc:
@@ -234,14 +234,14 @@ def _print_inspection(summary: InspectionSummary) -> None:
 def show(
     metric: str = typer.Argument(..., help="Metric name to inspect."),
     date_str: str = typer.Option(..., "--date", help="Target metric date (YYYY-MM-DD)."),
-    config_path: Optional[Path] = typer.Option(None, "--config", path_type=Path),
+    config_path: Optional[Path] = typer.Option(None, "--config"),
     registry_path: Optional[Path] = typer.Option(
-        Path("config/metrics_registry.yaml"), "--registry", path_type=Path
+        Path("config/metrics_registry.yaml"), "--registry"
     ),
     limit: int = typer.Option(5, "--limit", min=1, max=50, help="Maximum rows per upstream table."),
     offset: int = typer.Option(0, "--offset", min=0, help="Rows to skip before applying limit."),
     json_output: bool = typer.Option(False, "--json", help="Emit JSON instead of tables."),
-    output_path: Optional[Path] = typer.Option(None, "--output", path_type=Path, help="Write JSON payload to a file."),
+    output_path: Optional[Path] = typer.Option(None, "--output", help="Write JSON payload to a file."),
 ) -> None:
     """Inspect upstream records contributing to a metric on a given date."""
 

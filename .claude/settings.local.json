@@ -2,7 +2,9 @@
   "permissions": {
     "allow": [
       "Bash(python -m pytest:*)",
-      "Bash(cat:*)"
+      "Bash(cat:*)",
+      "Bash(git push:*)",
+      "Bash(tokei:*)"
     ],
     "deny": [],
     "ask": []
